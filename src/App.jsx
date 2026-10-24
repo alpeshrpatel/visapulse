@@ -223,17 +223,6 @@ function App() {
           <div className="control-bar">
             <div className="preference-tabs" role="tablist" aria-label="Preference type">
               <button
-                id="family-tab"
-                className={`preference-tab ${isFamily ? 'is-active' : ''}`}
-                type="button"
-                role="tab"
-                aria-selected={isFamily}
-                aria-controls="category-panel"
-                onClick={() => setPreference('familySponsored')}
-              >
-                <UsersRound size={16} /> Family-sponsored <span className="tab-count">05</span>
-              </button>
-              <button
                 id="employment-tab"
                 className={`preference-tab ${!isFamily ? 'is-active' : ''}`}
                 type="button"
@@ -243,6 +232,17 @@ function App() {
                 onClick={() => setPreference('employmentBased')}
               >
                 <BriefcaseBusiness size={16} /> Employment-based <span className="tab-count">10</span>
+              </button>
+              <button
+                id="family-tab"
+                className={`preference-tab ${isFamily ? 'is-active' : ''}`}
+                type="button"
+                role="tab"
+                aria-selected={isFamily}
+                aria-controls="category-panel"
+                onClick={() => setPreference('familySponsored')}
+              >
+                <UsersRound size={16} /> Family-sponsored <span className="tab-count">05</span>
               </button>
             </div>
             <div className="control-tools">
