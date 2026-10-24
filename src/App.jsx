@@ -26,6 +26,8 @@ const bulletinsByPeriod = Object.fromEntries(
 )
 const availablePeriods = Object.keys(bulletinsByPeriod).sort()
 const defaultPeriod = bulletinsByPeriod['2026-10'] ? '2026-10' : availablePeriods.at(-1)
+const themeStorageKey = 'visa-visapulse-theme'
+const legacyThemeStorageKey = 'visa-datebook-theme'
 
 const countryKeys = Object.keys(bulletinsByPeriod[defaultPeriod].countryColumns)
 const countryShortNames = {
@@ -98,12 +100,14 @@ function getDateChange(current, previous) {
 
 function App() {
   const [period, setPeriod] = useState(defaultPeriod)
-  const [preference, setPreference] = useState('familySponsored')
+  const [preference, setPreference] = useState('employmentBased')
   const [chart, setChart] = useState('finalActionDates')
   const [comparison, setComparison] = useState('month')
   const [country, setCountry] = useState('all')
   const [query, setQuery] = useState('')
-  const [theme, setTheme] = useState(() => localStorage.getItem('visa-datebook-theme') ?? 'light')
+  const [theme, setTheme] = useState(() =>
+    localStorage.getItem(themeStorageKey) ?? localStorage.getItem(legacyThemeStorageKey) ?? 'dark',
+  )
   const bulletinData = bulletinsByPeriod[period]
   const comparisonPeriod = getComparisonPeriod(period, comparison)
   const comparisonData = comparisonPeriod ? bulletinsByPeriod[comparisonPeriod] : null
@@ -121,15 +125,16 @@ function App() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
-    localStorage.setItem('visa-datebook-theme', theme)
+    localStorage.setItem(themeStorageKey, theme)
+    localStorage.removeItem(legacyThemeStorageKey)
   }, [theme])
 
   return (
     <div className="app-shell">
       <header className="topbar">
-        <a className="brand" href="#top" aria-label="Datebook home">
+        <a className="brand" href="#top" aria-label="visapulse home">
           <span className="brand-mark"><Globe2 size={18} strokeWidth={2.2} /></span>
-          <span>datebook<span className="brand-period">.</span></span>
+          <span>visapulse<span className="brand-period">.</span></span>
         </a>
         <div className="topbar-right">
           <span className="edition-label">IMMIGRATION DATA, MADE CLEAR</span>
@@ -363,7 +368,7 @@ function App() {
         </details>
 
         <footer className="page-footer">
-          <span className="footer-brand">datebook<span>.</span></span>
+          <span className="footer-brand">visapulse<span>.</span></span>
           <span>Dates are shown as published for {formatPeriodLabel(period)}. Always confirm with the official bulletin.</span>
           <span className="footer-edition">FY {bulletinData.bulletin.fiscalYear} <i>•</i> ISSUE {String(monthIndex).padStart(2, '0')}</span>
         </footer>
