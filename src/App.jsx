@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import {
   ArrowDownRight,
   ArrowDownToLine,
@@ -25,9 +25,14 @@ const bulletinsByPeriod = Object.fromEntries(
     .filter(([period]) => period),
 )
 const availablePeriods = Object.keys(bulletinsByPeriod).sort()
-const defaultPeriod = bulletinsByPeriod['2026-10'] ? '2026-10' : availablePeriods.at(-1)
+const today = new Date()
+const currentPeriod = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
+const defaultPeriod = bulletinsByPeriod[currentPeriod]
+  ? currentPeriod
+  : availablePeriods.filter((period) => period <= currentPeriod).at(-1) ?? availablePeriods.at(-1)
 const themeStorageKey = 'visa-visapulse-theme'
 const legacyThemeStorageKey = 'visa-datebook-theme'
+const HistoricalCutoffChart = lazy(() => import('./HistoricalCutoffChart.jsx'))
 
 const countryKeys = Object.keys(bulletinsByPeriod[defaultPeriod].countryColumns)
 const countryShortNames = {
@@ -98,10 +103,156 @@ function getDateChange(current, previous) {
   }
 }
 
+function getNumericDateDelta(current, previous) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(current) || !/^\d{4}-\d{2}-\d{2}$/.test(previous)) return null
+  return Math.round((Date.parse(current) - Date.parse(previous)) / 86400000)
+}
+
+function getBulletinMovements(current, previous) {
+  if (!previous) return []
+  return Object.entries(current.categories).flatMap(([group, categories]) =>
+    Object.entries(categories).flatMap(([code, item]) => {
+      const previousItem = getComparableCategory(previous.categories[group], code)
+      if (!previousItem) return []
+      return Object.entries(item.finalActionDates).flatMap(([country, value]) => {
+        const previousValue = previousItem.finalActionDates[country]
+        if (previousValue === undefined) return []
+        return [{
+          group,
+          groupLabel: group === 'employmentBased' ? 'Employment-based' : 'Family-sponsored',
+          code,
+          categoryName: item.name,
+          country,
+          countryName: countryShortNames[country] ?? current.countryColumns[country],
+          value,
+          previousValue,
+          movement: getDateChange(value, previousValue),
+          days: getNumericDateDelta(value, previousValue),
+        }]
+      })
+    }),
+  )
+}
+
+function getHistoricalFlags(period, movements) {
+  const periodIndex = availablePeriods.indexOf(period)
+  const numericFlags = movements.flatMap((item) => {
+    if (item.days === null || periodIndex < 3) return []
+    const history = []
+    for (let offset = 1; offset <= 3; offset += 1) {
+      const historyIndex = periodIndex - offset
+      const currentPeriod = bulletinsByPeriod[availablePeriods[historyIndex]]
+      const previousPeriod = bulletinsByPeriod[availablePeriods[historyIndex - 1]]
+      const currentValue = currentPeriod?.categories[item.group]?.[item.code]?.finalActionDates?.[item.country]
+      const previousValue = previousPeriod?.categories[item.group]?.[item.code]?.finalActionDates?.[item.country]
+      const delta = getNumericDateDelta(currentValue, previousValue)
+      if (delta !== null) history.push(delta)
+    }
+    if (history.length < 2) return []
+    const stableHistory = history.every((delta) => Math.abs(delta) <= 30)
+    const sameDirection = history.every((delta) => Math.sign(delta) === Math.sign(history[0]))
+    const isSpike = Math.abs(item.days) >= 90 && stableHistory
+    const isReversal = Math.abs(item.days) >= 30 && sameDirection && Math.sign(item.days) !== Math.sign(history[0])
+    if (!isSpike && !isReversal) return []
+    return [{
+      ...item,
+      reason: isSpike
+        ? `Shifted ${item.movement.label} after ${history.length} stable monthly changes`
+        : `Reversed after ${history.length} consecutive ${history[0] > 0 ? 'advances' : 'retrogressions'}`,
+      priority: isSpike ? Math.abs(item.days) : Math.abs(item.days) / Math.max(1, ...history.map(Math.abs)),
+    }]
+  })
+  return numericFlags
+    .sort((a, b) => b.priority - a.priority)
+    .slice(0, 4)
+}
+
+function buildMonthlyInsights(period, bulletin) {
+  const previousPeriod = getComparisonPeriod(period, 'month')
+  const previousBulletin = bulletinsByPeriod[previousPeriod]
+  const movements = getBulletinMovements(bulletin, previousBulletin)
+  const sortByMagnitude = (a, b) => {
+    if (a.days === null) return b.days === null ? 0 : -1
+    if (b.days === null) return 1
+    return Math.abs(b.days) - Math.abs(a.days)
+  }
+  const advances = movements.filter((item) => item.movement.type === 'advance').sort(sortByMagnitude)
+  const retrogressions = movements.filter((item) => item.movement.type === 'retrogression').sort(sortByMagnitude)
+  const countryStats = Object.keys(bulletin.countryColumns).map((country) => ({
+    country,
+    name: countryShortNames[country] ?? bulletin.countryColumns[country],
+    advances: movements.filter((item) => item.country === country && item.movement.type === 'advance').length,
+    retrogressions: movements.filter((item) => item.country === country && item.movement.type === 'retrogression').length,
+    unchanged: movements.filter((item) => item.country === country && item.movement.type === 'unchanged').length,
+  }))
+  const unchangedCategories = Object.entries(bulletin.categories).flatMap(([group, categories]) =>
+    Object.entries(categories).flatMap(([code, item]) => {
+      const previousItem = getComparableCategory(previousBulletin?.categories[group], code)
+      const unchanged = previousItem && Object.keys(item.finalActionDates).every(
+        (country) => item.finalActionDates[country] === previousItem.finalActionDates[country],
+      )
+      return unchanged ? [{ group, code, name: categoryLabels[code] ?? code }] : []
+    }),
+  )
+  const historicalFlags = getHistoricalFlags(period, movements)
+  return {
+    previousPeriod,
+    movements,
+    advances,
+    retrogressions,
+    unchangedCount: movements.filter((item) => item.movement.type === 'unchanged').length,
+    unchangedCategories,
+    countryStats,
+    historicalFlags,
+  }
+}
+
+function createExecutiveSummary(period, insights) {
+  if (!insights.movements.length) {
+    return `No prior monthly bulletin is available for ${formatPeriodLabel(period)}, so month-over-month movement is not shown.`
+  }
+  const advanceCount = insights.advances.length
+  const retrogressionCount = insights.retrogressions.length
+  const countriesByAdvances = [...insights.countryStats].sort((a, b) => b.advances - a.advances)
+  const leader = countriesByAdvances[0]
+  const lead = `${formatPeriodLabel(period)} recorded ${advanceCount} advancing, ${retrogressionCount} retrogressing, and ${insights.unchangedCount} unchanged Final Action cutoffs across ${insights.movements.length} country-category pairs.`
+  const stillness = insights.unchangedCategories.length
+    ? `${insights.unchangedCategories.length} categories were unchanged across all chargeability areas.`
+    : ''
+  const country = leader?.advances
+    ? `${leader.name} led with ${leader.advances} advances.`
+    : ''
+  const exception = insights.historicalFlags[0]
+    ? `Historical outlier: ${insights.historicalFlags[0].code} for ${insights.historicalFlags[0].countryName} ${insights.historicalFlags[0].reason.toLowerCase()}.`
+    : ''
+  return [lead, stillness, country, exception].filter(Boolean).join(' ')
+}
+
+function buildHistoricalCutoffData(period, group, code, chart, countries) {
+  const endIndex = availablePeriods.indexOf(period)
+  const periods = availablePeriods.slice(Math.max(0, endIndex - 23), endIndex + 1)
+  return periods.map((bulletinPeriod) => {
+    const bulletin = bulletinsByPeriod[bulletinPeriod]
+    const item = getComparableCategory(bulletin.categories[group], code)
+    const values = {}
+    const statuses = {}
+    for (const country of countries) {
+      const value = item?.[chart]?.[country]
+      values[country] = value && /^\d{4}-\d{2}-\d{2}$/.test(value)
+        ? Date.parse(`${value}T00:00:00Z`)
+        : null
+      statuses[country] = value ?? 'Unavailable'
+    }
+    return { period: bulletinPeriod, values, statuses }
+  })
+}
+
 function App() {
   const [period, setPeriod] = useState(defaultPeriod)
   const [preference, setPreference] = useState('employmentBased')
   const [chart, setChart] = useState('finalActionDates')
+  const [trendChart, setTrendChart] = useState('finalActionDates')
+  const [trendCategory, setTrendCategory] = useState('EB2')
   const [comparison, setComparison] = useState('month')
   const [country, setCountry] = useState('all')
   const [query, setQuery] = useState('')
@@ -109,9 +260,15 @@ function App() {
     localStorage.getItem(themeStorageKey) ?? localStorage.getItem(legacyThemeStorageKey) ?? 'dark',
   )
   const bulletinData = bulletinsByPeriod[period]
+  const monthlyInsights = buildMonthlyInsights(period, bulletinData)
+  const executiveSummary = createExecutiveSummary(period, monthlyInsights)
   const comparisonPeriod = getComparisonPeriod(period, comparison)
   const comparisonData = comparisonPeriod ? bulletinsByPeriod[comparisonPeriod] : null
   const categories = Object.entries(bulletinData.categories[preference])
+  const selectedTrendCategory = categories.some(([code]) => code === trendCategory)
+    ? trendCategory
+    : categories[0]?.[0]
+  const trendData = buildHistoricalCutoffData(period, preference, selectedTrendCategory, trendChart, countryKeys)
   const visibleCategories = categories.filter(([code, item]) =>
     `${code} ${item.name}`.toLowerCase().includes(query.trim().toLowerCase()),
   )
@@ -197,6 +354,189 @@ function App() {
           </div>
         </section>
 
+        <section className="insights-section" aria-labelledby="insights-title">
+          <div className="insights-heading">
+            <div>
+              <span className="section-kicker">THE MONTH IN CONTEXT</span>
+              <h2 id="insights-title">Bulletin insights<span>.</span></h2>
+            </div>
+            <span className="insights-period">
+              {monthlyInsights.previousPeriod
+                ? `VS ${formatPeriodLabel(monthlyInsights.previousPeriod).toUpperCase()}`
+                : 'NO PRIOR BULLETIN'}
+            </span>
+          </div>
+
+          <article className="executive-summary" aria-labelledby="executive-summary-title">
+            <div className="executive-summary-heading">
+              <div>
+                <span className="section-kicker">MONTHLY EXECUTIVE SUMMARY</span>
+                <h3 id="executive-summary-title">Executive summary</h3>
+              </div>
+              <span className="summary-period">{formatPeriodLabel(period)}</span>
+            </div>
+            <p>{executiveSummary}</p>
+            <span className="summary-method">Based on published Final Action cutoffs. Informational only, not legal advice.</span>
+          </article>
+
+          <div className="insights-grid">
+            <article className="insight-panel mover-panel" aria-labelledby="movers-title">
+              <div className="insight-panel-heading">
+                <div>
+                  <span className="section-kicker">MONTH OVER MONTH</span>
+                  <h3 id="movers-title">Biggest advances and retrogressions</h3>
+                </div>
+                <span className="insight-count">{monthlyInsights.movements.length} cutoffs</span>
+              </div>
+              <div className="mover-columns">
+                {[
+                  ['ADVANCES', monthlyInsights.advances, 'advance'],
+                  ['RETROGRESSIONS', monthlyInsights.retrogressions, 'retrogression'],
+                ].map(([heading, items, direction]) => (
+                  <section className="mover-list" key={heading} aria-label={heading}>
+                    <h4>{heading}</h4>
+                    {items.length ? (
+                      <ul>
+                        {items.slice(0, 4).map((item) => (
+                          <li key={`${item.group}-${item.code}-${item.country}`}>
+                            <span className="mover-category">{categoryLabels[item.code] ?? item.code}</span>
+                            <span className="mover-country">{item.countryName}</span>
+                            <span className={`mover-value change-${direction}`}>{item.movement.label}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : <p className="insight-empty">No {heading.toLowerCase()} this month.</p>}
+                  </section>
+                ))}
+              </div>
+            </article>
+
+            <article className="insight-panel country-panel" aria-labelledby="country-insights-title">
+              <div className="insight-panel-heading">
+                <div>
+                  <span className="section-kicker">FIVE CHARGEABILITY AREAS</span>
+                  <h3 id="country-insights-title">Country-wise cutoff movement</h3>
+                </div>
+              </div>
+              <div className="country-table-scroll">
+                <table className="country-insight-table">
+                  <thead><tr><th scope="col">AREA</th><th scope="col">ADV.</th><th scope="col">RETRO.</th><th scope="col">NO MOVE</th></tr></thead>
+                  <tbody>
+                    {monthlyInsights.countryStats.map((item) => (
+                      <tr key={item.country}>
+                        <th scope="row">{item.name}</th>
+                        <td className="country-advance-count">{item.advances}</td>
+                        <td className="country-retrogression-count">{item.retrogressions}</td>
+                        <td>{item.unchanged}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="panel-footnote">Counts out of 15 preference categories per area.</p>
+            </article>
+
+            <article className="insight-panel unchanged-panel" aria-labelledby="unchanged-title">
+              <div className="insight-panel-heading">
+                <div>
+                  <span className="section-kicker">ALL FIVE AREAS</span>
+                  <h3 id="unchanged-title">Categories with no movement</h3>
+                </div>
+                <span className="insight-count">{monthlyInsights.unchangedCategories.length}</span>
+              </div>
+              {monthlyInsights.unchangedCategories.length ? (
+                <ul className="unchanged-list">
+                  {monthlyInsights.unchangedCategories.map((item) => (
+                    <li key={`${item.group}-${item.code}`}>
+                      <span className="mover-category">{item.name}</span>
+                      <span>{item.group === 'employmentBased' ? 'Employment' : 'Family'}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : <p className="insight-empty">No category held steady across all five areas.</p>}
+            </article>
+
+            <article className="insight-panel history-panel" aria-labelledby="history-title">
+              <div className="insight-panel-heading">
+                <div>
+                  <span className="section-kicker">VS. RECENT HISTORY</span>
+                  <h3 id="history-title">Unexpected trend changes</h3>
+                </div>
+                <span className="insight-count">{monthlyInsights.historicalFlags.length}</span>
+              </div>
+              <p className="panel-footnote">Large cutoff jumps after stable months, or reversals after consecutive moves.</p>
+              {monthlyInsights.historicalFlags.length ? (
+                <ul className="history-list">
+                  {monthlyInsights.historicalFlags.map((item) => (
+                    <li key={`${item.group}-${item.code}-${item.country}`}>
+                      <div><span className="mover-category">{categoryLabels[item.code] ?? item.code}</span><span>{item.countryName}</span></div>
+                      <strong className={item.days > 0 ? 'country-advance-count' : 'country-retrogression-count'}>{item.movement.label}</strong>
+                      <p>{item.reason}</p>
+                    </li>
+                  ))}
+                </ul>
+              ) : <p className="insight-empty">No cutoff changes met the historical outlier rules this month.</p>}
+            </article>
+          </div>
+        </section>
+
+        <section className="trend-section" aria-labelledby="trend-heading">
+          <div className="trend-heading">
+            <div>
+              <span className="section-kicker">HISTORICAL CUTOFFS</span>
+              <h2 id="trend-heading">Two years of movement<span>.</span></h2>
+            </div>
+            <span className="trend-window">
+              {trendData.length > 1
+                ? `${formatPeriodLabel(trendData[0].period)} to ${formatPeriodLabel(trendData.at(-1).period)}`
+                : 'More monthly data needed'}
+            </span>
+          </div>
+
+          <div className="trend-controls">
+            <label className="trend-category-picker">
+              <span className="section-kicker">CATEGORY</span>
+              <select
+                aria-label="Historical chart category"
+                value={selectedTrendCategory}
+                onChange={(event) => setTrendCategory(event.target.value)}
+              >
+                {categories.map(([code]) => (
+                  <option key={code} value={code}>{categoryLabels[code] ?? code}</option>
+                ))}
+              </select>
+              <ChevronDown size={14} />
+            </label>
+            <div className="chart-switch" role="group" aria-label="Historical chart dates">
+              <button
+                className={trendChart === 'finalActionDates' ? 'is-selected' : ''}
+                type="button"
+                aria-pressed={trendChart === 'finalActionDates'}
+                onClick={() => setTrendChart('finalActionDates')}
+              >Final Action</button>
+              <button
+                className={trendChart === 'datesForFiling' ? 'is-selected' : ''}
+                type="button"
+                aria-pressed={trendChart === 'datesForFiling'}
+                onClick={() => setTrendChart('datesForFiling')}
+              >Dates for Filing</button>
+            </div>
+          </div>
+
+          <div className="trend-chart" aria-label="Historical cutoff dates by chargeability area">
+            {trendData.length > 1 ? (
+              <Suspense fallback={<p className="trend-empty">Loading historical chart...</p>}>
+                <HistoricalCutoffChart data={trendData} countries={countryKeys} countryNames={countryShortNames} />
+              </Suspense>
+            ) : (
+              <p className="trend-empty">Choose a later bulletin month to see historical cutoff movement.</p>
+            )}
+          </div>
+          <p className="trend-note">
+            {preference === 'employmentBased' ? 'Employment-based' : 'Family-sponsored'} {categoryLabels[selectedTrendCategory] ?? selectedTrendCategory} across all five chargeability areas. Cutoff values are dates; “Current” and “Unavailable” appear as gaps and are identified in the tooltip.
+          </p>
+        </section>
+
         <section className="data-section" aria-labelledby="data-heading">
           <div className="data-heading-row">
             <div>
@@ -218,6 +558,14 @@ function App() {
               <ArrowDownToLine size={16} /> <span>Download data</span>
               </a>
             </div>
+          </div>
+          <div className="trend-legend" aria-label="Chargeability area chart legend">
+            {countryKeys.map((key, index) => (
+              <span className="trend-legend-item" key={key}>
+                <span className="trend-legend-line" style={{ '--series-color': `var(--chart-series-${index + 1})` }} />
+                {countryShortNames[key]}
+              </span>
+            ))}
           </div>
 
           <div className="control-bar">
