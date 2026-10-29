@@ -1,0 +1,89 @@
+{
+  "bulletin": {
+    "month": "July",
+    "year": 2005,
+    "fiscalYear": 2005,
+    "officialSourceUrl": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2005/visa-bulletin-for-july-2005.html",
+    "dataReferenceUrl": "https://www.visabulletin.ai/bulletins/2005/july"
+  },
+  "countryColumns": {
+    "allChargeabilityAreasExceptThoseListed": "All Chargeability Areas Except Those Listed",
+    "chinaMainlandBorn": "China-mainland born",
+    "india": "India",
+    "mexico": "Mexico",
+    "philippines": "Philippines"
+  },
+  "categories": {
+    "familySponsored": {},
+    "employmentBased": {
+      "EB1": {
+        "name": "Employment-based First Preference (Priority Workers)",
+        "finalActionDates": {
+          "allChargeabilityAreasExceptThoseListed": "2001-04-08",
+          "chinaMainlandBorn": "2001-04-08",
+          "india": "2001-04-08",
+          "mexico": "1983-01-01",
+          "philippines": "1991-02-08"
+        },
+        "datesForFiling": {
+          "allChargeabilityAreasExceptThoseListed": "Unavailable",
+          "chinaMainlandBorn": "Unavailable",
+          "india": "Unavailable",
+          "mexico": "Unavailable",
+          "philippines": "Unavailable"
+        }
+      },
+      "EB2": {
+        "name": "Employment-based Second Preference (Advanced Degree Professionals and Persons of Exceptional Ability)",
+        "finalActionDates": {
+          "allChargeabilityAreasExceptThoseListed": "2001-05-22",
+          "chinaMainlandBorn": "2001-05-22",
+          "india": "2001-05-22",
+          "mexico": "1998-05-22",
+          "philippines": "2001-05-22"
+        },
+        "datesForFiling": {
+          "allChargeabilityAreasExceptThoseListed": "Unavailable",
+          "chinaMainlandBorn": "Unavailable",
+          "india": "Unavailable",
+          "mexico": "Unavailable",
+          "philippines": "Unavailable"
+        }
+      },
+      "EB3": {
+        "name": "Employment-based Third Preference (Skilled Workers, Professionals, and Other Workers)",
+        "finalActionDates": {
+          "allChargeabilityAreasExceptThoseListed": "1998-02-01",
+          "chinaMainlandBorn": "1998-02-01",
+          "india": "1998-02-01",
+          "mexico": "1992-01-01",
+          "philippines": "1990-09-01"
+        },
+        "datesForFiling": {
+          "allChargeabilityAreasExceptThoseListed": "Unavailable",
+          "chinaMainlandBorn": "Unavailable",
+          "india": "Unavailable",
+          "mexico": "Unavailable",
+          "philippines": "Unavailable"
+        }
+      },
+      "EB4": {
+        "name": "Employment-based Fourth Preference (Special Immigrants)",
+        "finalActionDates": {
+          "allChargeabilityAreasExceptThoseListed": "1993-09-08",
+          "chinaMainlandBorn": "1993-09-08",
+          "india": "1993-01-15",
+          "mexico": "1987-01-01",
+          "philippines": "1983-01-01"
+        },
+        "datesForFiling": {
+          "allChargeabilityAreasExceptThoseListed": "Unavailable",
+          "chinaMainlandBorn": "Unavailable",
+          "india": "Unavailable",
+          "mexico": "Unavailable",
+          "philippines": "Unavailable"
+        }
+      }
+    }
+  }
+}

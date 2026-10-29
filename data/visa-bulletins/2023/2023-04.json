@@ -1,0 +1,20 @@
+{
+  "bulletin": {
+    "month": "April",
+    "year": 2023,
+    "fiscalYear": 2023,
+    "officialSourceUrl": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2023/visa-bulletin-for-april-2023.html",
+    "dataReferenceUrl": "https://www.visabulletin.ai/bulletins/2023/april"
+  },
+  "countryColumns": {
+    "allChargeabilityAreasExceptThoseListed": "All Chargeability Areas Except Those Listed",
+    "chinaMainlandBorn": "China-mainland born",
+    "india": "India",
+    "mexico": "Mexico",
+    "philippines": "Philippines"
+  },
+  "categories": {
+    "familySponsored": {},
+    "employmentBased": {}
+  }
+}

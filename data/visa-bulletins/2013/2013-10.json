@@ -1,0 +1,20 @@
+{
+  "bulletin": {
+    "month": "October",
+    "year": 2013,
+    "fiscalYear": 2014,
+    "officialSourceUrl": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2013/visa-bulletin-for-october-2013.html",
+    "dataReferenceUrl": "https://www.visabulletin.ai/bulletins/2013/october"
+  },
+  "countryColumns": {
+    "allChargeabilityAreasExceptThoseListed": "All Chargeability Areas Except Those Listed",
+    "chinaMainlandBorn": "China-mainland born",
+    "india": "India",
+    "mexico": "Mexico",
+    "philippines": "Philippines"
+  },
+  "categories": {
+    "familySponsored": {},
+    "employmentBased": {}
+  }
+}

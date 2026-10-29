@@ -1,0 +1,243 @@
+{
+  "bulletin": {
+    "month": "April",
+    "year": 2021,
+    "fiscalYear": 2021,
+    "officialSourceUrl": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2021/visa-bulletin-for-april-2021.html",
+    "dataReferenceUrl": "https://www.visabulletin.ai/bulletins/2021/april"
+  },
+  "countryColumns": {
+    "allChargeabilityAreasExceptThoseListed": "All Chargeability Areas Except Those Listed",
+    "chinaMainlandBorn": "China-mainland born",
+    "india": "India",
+    "mexico": "Mexico",
+    "philippines": "Philippines"
+  },
+  "categories": {
+    "familySponsored": {
+      "F1": {
+        "name": "Unmarried Sons and Daughters of U.S. Citizens",
+        "finalActionDates": {
+          "allChargeabilityAreasExceptThoseListed": "2014-10-08",
+          "chinaMainlandBorn": "2014-10-08",
+          "india": "2014-10-08",
+          "mexico": "1998-02-22",
+          "philippines": "2012-01-22"
+        },
+        "datesForFiling": {
+          "allChargeabilityAreasExceptThoseListed": "2015-09-15",
+          "chinaMainlandBorn": "2015-09-15",
+          "india": "2015-09-15",
+          "mexico": "2000-03-01",
+          "philippines": "2013-09-01"
+        }
+      },
+      "F2A": {
+        "name": "Spouses and Children of Permanent Residents",
+        "finalActionDates": {
+          "allChargeabilityAreasExceptThoseListed": "Current",
+          "chinaMainlandBorn": "Current",
+          "india": "Current",
+          "mexico": "Current",
+          "philippines": "Current"
+        },
+        "datesForFiling": {
+          "allChargeabilityAreasExceptThoseListed": "2021-03-01",
+          "chinaMainlandBorn": "2021-03-01",
+          "india": "2021-03-01",
+          "mexico": "2021-03-01",
+          "philippines": "2021-03-01"
+        }
+      },
+      "F2B": {
+        "name": "Unmarried Sons and Daughters (21 years of age or older) of Permanent Residents",
+        "finalActionDates": {
+          "allChargeabilityAreasExceptThoseListed": "2015-08-08",
+          "chinaMainlandBorn": "2015-08-08",
+          "india": "2015-08-08",
+          "mexico": "1999-07-22",
+          "philippines": "2011-09-01"
+        },
+        "datesForFiling": {
+          "allChargeabilityAreasExceptThoseListed": "2016-06-15",
+          "chinaMainlandBorn": "2016-06-15",
+          "india": "2016-06-15",
+          "mexico": "2000-07-08",
+          "philippines": "2012-11-08"
+        }
+      },
+      "F3": {
+        "name": "Married Sons and Daughters of U.S. Citizens",
+        "finalActionDates": {
+          "allChargeabilityAreasExceptThoseListed": "2008-08-08",
+          "chinaMainlandBorn": "2008-08-08",
+          "india": "2008-08-08",
+          "mexico": "1996-10-01",
+          "philippines": "2002-04-01"
+        },
+        "datesForFiling": {
+          "allChargeabilityAreasExceptThoseListed": "2009-06-22",
+          "chinaMainlandBorn": "2009-06-22",
+          "india": "2009-06-22",
+          "mexico": "2000-09-08",
+          "philippines": "2003-05-01"
+        }
+      },
+      "F4": {
+        "name": "Brothers and Sisters of Adult U.S. Citizens",
+        "finalActionDates": {
+          "allChargeabilityAreasExceptThoseListed": "2006-11-01",
+          "chinaMainlandBorn": "2006-11-01",
+          "india": "2005-04-08",
+          "mexico": "1998-07-22",
+          "philippines": "2002-04-08"
+        },
+        "datesForFiling": {
+          "allChargeabilityAreasExceptThoseListed": "2007-10-01",
+          "chinaMainlandBorn": "2007-10-01",
+          "india": "2005-12-01",
+          "mexico": "1999-05-08",
+          "philippines": "2003-05-01"
+        }
+      }
+    },
+    "employmentBased": {
+      "EB1": {
+        "name": "Employment-based First Preference (Priority Workers)",
+        "finalActionDates": {
+          "allChargeabilityAreasExceptThoseListed": "Current",
+          "chinaMainlandBorn": "Current",
+          "india": "Current",
+          "mexico": "Current",
+          "philippines": "Current"
+        },
+        "datesForFiling": {
+          "allChargeabilityAreasExceptThoseListed": "Current",
+          "chinaMainlandBorn": "Current",
+          "india": "Current",
+          "mexico": "Current",
+          "philippines": "Current"
+        }
+      },
+      "EB2": {
+        "name": "Employment-based Second Preference (Advanced Degree Professionals and Persons of Exceptional Ability)",
+        "finalActionDates": {
+          "allChargeabilityAreasExceptThoseListed": "Current",
+          "chinaMainlandBorn": "2016-09-01",
+          "india": "2010-05-01",
+          "mexico": "Current",
+          "philippines": "Current"
+        },
+        "datesForFiling": {
+          "allChargeabilityAreasExceptThoseListed": "Current",
+          "chinaMainlandBorn": "2017-01-01",
+          "india": "2011-05-15",
+          "mexico": "Current",
+          "philippines": "Current"
+        }
+      },
+      "EB3": {
+        "name": "Employment-based Third Preference (Skilled Workers, Professionals, and Other Workers)",
+        "finalActionDates": {
+          "allChargeabilityAreasExceptThoseListed": "Current",
+          "chinaMainlandBorn": "2018-03-15",
+          "india": "2010-09-01",
+          "mexico": "Current",
+          "philippines": "Current"
+        },
+        "datesForFiling": {
+          "allChargeabilityAreasExceptThoseListed": "Current",
+          "chinaMainlandBorn": "2018-08-01",
+          "india": "2014-01-01",
+          "mexico": "Current",
+          "philippines": "Current"
+        }
+      },
+      "otherWorkers": {
+        "name": "Other Workers",
+        "finalActionDates": {
+          "allChargeabilityAreasExceptThoseListed": "Current",
+          "chinaMainlandBorn": "2009-06-01",
+          "india": "2010-09-01",
+          "mexico": "Current",
+          "philippines": "Current"
+        },
+        "datesForFiling": {
+          "allChargeabilityAreasExceptThoseListed": "Current",
+          "chinaMainlandBorn": "2009-09-01",
+          "india": "2014-01-01",
+          "mexico": "Current",
+          "philippines": "Current"
+        }
+      },
+      "EB4": {
+        "name": "Employment-based Fourth Preference (Special Immigrants)",
+        "finalActionDates": {
+          "allChargeabilityAreasExceptThoseListed": "Current",
+          "chinaMainlandBorn": "Current",
+          "india": "Current",
+          "mexico": "2019-02-01",
+          "philippines": "Current"
+        },
+        "datesForFiling": {
+          "allChargeabilityAreasExceptThoseListed": "Current",
+          "chinaMainlandBorn": "Current",
+          "india": "Current",
+          "mexico": "Current",
+          "philippines": "Current"
+        }
+      },
+      "certainReligiousWorkers": {
+        "name": "Certain Religious Workers",
+        "finalActionDates": {
+          "allChargeabilityAreasExceptThoseListed": "Current",
+          "chinaMainlandBorn": "Current",
+          "india": "Current",
+          "mexico": "2019-02-01",
+          "philippines": "Current"
+        },
+        "datesForFiling": {
+          "allChargeabilityAreasExceptThoseListed": "Current",
+          "chinaMainlandBorn": "Current",
+          "india": "Current",
+          "mexico": "Current",
+          "philippines": "Current"
+        }
+      },
+      "EB5Unreserved": {
+        "name": "Non-Regional Center (C5 and T5)",
+        "finalActionDates": {
+          "allChargeabilityAreasExceptThoseListed": "Current",
+          "chinaMainlandBorn": "2015-08-15",
+          "india": "Current",
+          "mexico": "Current",
+          "philippines": "Current"
+        },
+        "datesForFiling": {
+          "allChargeabilityAreasExceptThoseListed": "Current",
+          "chinaMainlandBorn": "2015-12-15",
+          "india": "Current",
+          "mexico": "Current",
+          "philippines": "Current"
+        }
+      },
+      "EB5": {
+        "name": "Non-Regional Center (I5 and R5)",
+        "finalActionDates": {
+          "allChargeabilityAreasExceptThoseListed": "Current",
+          "chinaMainlandBorn": "2015-08-15",
+          "india": "Current",
+          "mexico": "Current",
+          "philippines": "Current"
+        },
+        "datesForFiling": {
+          "allChargeabilityAreasExceptThoseListed": "Current",
+          "chinaMainlandBorn": "2015-12-15",
+          "india": "Current",
+          "mexico": "Current",
+          "philippines": "Current"
+        }
+      }
+    }
+  }
+}

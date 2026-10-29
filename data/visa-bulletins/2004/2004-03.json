@@ -1,0 +1,20 @@
+{
+  "bulletin": {
+    "month": "March",
+    "year": 2004,
+    "fiscalYear": 2004,
+    "officialSourceUrl": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2004/visa-bulletin-for-march-2004.html",
+    "dataReferenceUrl": "https://www.visabulletin.ai/bulletins/2004/march"
+  },
+  "countryColumns": {
+    "allChargeabilityAreasExceptThoseListed": "All Chargeability Areas Except Those Listed",
+    "chinaMainlandBorn": "China-mainland born",
+    "india": "India",
+    "mexico": "Mexico",
+    "philippines": "Philippines"
+  },
+  "categories": {
+    "familySponsored": {},
+    "employmentBased": {}
+  }
+}

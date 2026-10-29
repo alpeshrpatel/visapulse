@@ -1,0 +1,20 @@
+{
+  "bulletin": {
+    "month": "January",
+    "year": 2020,
+    "fiscalYear": 2020,
+    "officialSourceUrl": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2020/visa-bulletin-for-january-2020.html",
+    "dataReferenceUrl": "https://www.visabulletin.ai/bulletins/2020/january"
+  },
+  "countryColumns": {
+    "allChargeabilityAreasExceptThoseListed": "All Chargeability Areas Except Those Listed",
+    "chinaMainlandBorn": "China-mainland born",
+    "india": "India",
+    "mexico": "Mexico",
+    "philippines": "Philippines"
+  },
+  "categories": {
+    "familySponsored": {},
+    "employmentBased": {}
+  }
+}

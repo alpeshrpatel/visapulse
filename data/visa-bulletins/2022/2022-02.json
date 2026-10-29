@@ -1,0 +1,20 @@
+{
+  "bulletin": {
+    "month": "February",
+    "year": 2022,
+    "fiscalYear": 2022,
+    "officialSourceUrl": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2022/visa-bulletin-for-february-2022.html",
+    "dataReferenceUrl": "https://www.visabulletin.ai/bulletins/2022/february"
+  },
+  "countryColumns": {
+    "allChargeabilityAreasExceptThoseListed": "All Chargeability Areas Except Those Listed",
+    "chinaMainlandBorn": "China-mainland born",
+    "india": "India",
+    "mexico": "Mexico",
+    "philippines": "Philippines"
+  },
+  "categories": {
+    "familySponsored": {},
+    "employmentBased": {}
+  }
+}

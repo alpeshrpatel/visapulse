@@ -77,20 +77,40 @@ function extractTableRows(markdown) {
     .filter((cells) => cells.length === 4 && cells[0] && !/^Category$/i.test(cells[0]) && !/^---+$/.test(cells[0]))
 }
 
-function parseBulletin(markdown, year, month) {
+function parseBulletin(markdown, year, month, relaxed = false) {
   const monthName = month[0].toUpperCase() + month.slice(1)
   const sourceUrl = `https://www.visabulletin.ai/bulletins/${year}/${month}`
   const rows = extractTableRows(markdown)
   if (rows.length < 70 || rows.length > 75) {
-    throw new Error(`${year}-${month}: expected 70-75 category-country rows, found ${rows.length}`)
+    const msg = `${year}-${month}: expected 70-75 category-country rows, found ${rows.length}`
+    if (relaxed) {
+      console.warn(msg)
+    } else {
+      throw new Error(msg)
+    }
   }
 
   const categories = { familySponsored: {}, employmentBased: {} }
   for (const [categoryText, countryName, finalAction, filing] of rows) {
     const countryKey = countryKeysByName[countryName.toLowerCase()]
-    if (!countryKey) throw new Error(`${year}-${month}: unknown country column "${countryName}"`)
+    if (!countryKey) {
+      if (relaxed) {
+        console.warn(`${year}-${month}: unknown country column "${countryName}", skipping row`)
+        continue
+      }
+      throw new Error(`${year}-${month}: unknown country column "${countryName}"`)
+    }
 
-    const category = parseCategory(categoryText)
+    let category
+    try {
+      category = parseCategory(categoryText)
+    } catch (error) {
+      if (relaxed) {
+        console.warn(`${year}-${month}: ${error.message}, skipping row`)
+        continue
+      }
+      throw error
+    }
     const group = categories[category.group]
     const item = group[category.key] ??= {
       name: category.name,
@@ -98,10 +118,20 @@ function parseBulletin(markdown, year, month) {
       datesForFiling: {},
     }
     if (item.name !== category.name) {
-      throw new Error(`${year}-${month}: conflicting names for ${category.key}`)
+      const msg = `${year}-${month}: conflicting names for ${category.key}`
+      if (relaxed) {
+        console.warn(msg)
+      } else {
+        throw new Error(msg)
+      }
     }
     if (item.finalActionDates[countryKey] || item.datesForFiling[countryKey]) {
-      throw new Error(`${year}-${month}: duplicate ${category.key} / ${countryName} row`)
+      const msg = `${year}-${month}: duplicate ${category.key} / ${countryName} row`
+      if (relaxed) {
+        console.warn(msg)
+        continue
+      }
+      throw new Error(msg)
     }
     item.finalActionDates[countryKey] = normalizeDate(finalAction, sourceUrl)
     item.datesForFiling[countryKey] = normalizeDate(filing, sourceUrl)
@@ -109,13 +139,27 @@ function parseBulletin(markdown, year, month) {
 
   const familyCodes = ['F1', 'F2A', 'F2B', 'F3', 'F4']
   for (const code of familyCodes) {
-    if (!categories.familySponsored[code]) throw new Error(`${year}-${month}: missing family category ${code}`)
+    if (!categories.familySponsored[code]) {
+      const msg = `${year}-${month}: missing family category ${code}`
+      if (relaxed) {
+        console.warn(msg)
+      } else {
+        throw new Error(msg)
+      }
+    }
   }
   for (const group of Object.values(categories)) {
     for (const [code, item] of Object.entries(group)) {
       for (const countryKey of Object.keys(countryColumns)) {
         if (!(countryKey in item.finalActionDates) || !(countryKey in item.datesForFiling)) {
-          throw new Error(`${year}-${month}: incomplete country data for ${code}`)
+          const msg = `${year}-${month}: incomplete country data for ${code}`
+          if (relaxed) {
+            console.warn(`${msg}; filling missing with 'Unavailable'`)
+            item.finalActionDates[countryKey] = 'Unavailable'
+            item.datesForFiling[countryKey] = 'Unavailable'
+          } else {
+            throw new Error(msg)
+          }
         }
       }
     }
@@ -140,7 +184,7 @@ async function delay(milliseconds) {
 }
 
 async function fetchBulletin(year, month) {
-  const url = `https://r.jina.ai/http://www.visabulletin.ai/bulletins/${year}/${month}`
+  const url = `https://r.jina.ai/https://www.visabulletin.ai/bulletins/${year}/${month}`
   for (let attempt = 1; attempt <= 4; attempt += 1) {
     const response = await fetch(url, { headers: { Accept: 'text/plain' } })
     if (response.ok) return response.text()
@@ -156,8 +200,10 @@ const root = join(import.meta.dirname, '..', 'data', 'visa-bulletins')
 let downloaded = 0
 let skipped = 0
 
-for (const year of [2025, 2026]) {
-  const lastMonth = year === 2025 ? 12 : 11
+const relaxedYears = new Set([2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+for (let year = 2002; year <= 2026; year += 1) {
+  const lastMonth = year === 2026 ? 11 : 12
+  const relaxed = relaxedYears.has(year)
   for (const month of months.slice(0, lastMonth)) {
     const monthNumber = String(monthNumbers[month]).padStart(2, '0')
     const filePath = join(root, String(year), `${year}-${monthNumber}.json`)
@@ -171,7 +217,7 @@ for (const year of [2025, 2026]) {
     for (let attempt = 1; attempt <= 4; attempt += 1) {
       try {
         const markdown = await fetchBulletin(year, month)
-        bulletin = parseBulletin(markdown, year, month)
+        bulletin = parseBulletin(markdown, year, month, relaxed)
         break
       } catch (error) {
         if (attempt === 4) throw error

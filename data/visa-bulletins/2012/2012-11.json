@@ -1,0 +1,20 @@
+{
+  "bulletin": {
+    "month": "November",
+    "year": 2012,
+    "fiscalYear": 2013,
+    "officialSourceUrl": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2012/visa-bulletin-for-november-2012.html",
+    "dataReferenceUrl": "https://www.visabulletin.ai/bulletins/2012/november"
+  },
+  "countryColumns": {
+    "allChargeabilityAreasExceptThoseListed": "All Chargeability Areas Except Those Listed",
+    "chinaMainlandBorn": "China-mainland born",
+    "india": "India",
+    "mexico": "Mexico",
+    "philippines": "Philippines"
+  },
+  "categories": {
+    "familySponsored": {},
+    "employmentBased": {}
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "bulletin": {
+    "month": "July",
+    "year": 2006,
+    "fiscalYear": 2006,
+    "officialSourceUrl": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2006/visa-bulletin-for-july-2006.html",
+    "dataReferenceUrl": "https://www.visabulletin.ai/bulletins/2006/july"
+  },
+  "countryColumns": {
+    "allChargeabilityAreasExceptThoseListed": "All Chargeability Areas Except Those Listed",
+    "chinaMainlandBorn": "China-mainland born",
+    "india": "India",
+    "mexico": "Mexico",
+    "philippines": "Philippines"
+  },
+  "categories": {
+    "familySponsored": {},
+    "employmentBased": {}
+  }
+}

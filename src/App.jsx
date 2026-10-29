@@ -14,7 +14,9 @@ import {
   Search,
   UsersRound,
   Sun,
+  Upload,
 } from 'lucide-react'
+import GreenCardPlanner from './GreenCardPlanner.jsx'
 const bulletinModules = import.meta.glob('../data/visa-bulletins/**/*.json', {
   eager: true,
   import: 'default',
@@ -30,6 +32,38 @@ const currentPeriod = `${today.getFullYear()}-${String(today.getMonth() + 1).pad
 const defaultPeriod = bulletinsByPeriod[currentPeriod]
   ? currentPeriod
   : availablePeriods.filter((period) => period <= currentPeriod).at(-1) ?? availablePeriods.at(-1)
+
+const twoYearsAgoPeriod = '2024-11'
+const datasetStartPeriod = '2002-01'
+const datasetEndPeriod = String(Math.max(...availablePeriods))
+
+/**
+ * Compares the current bulletin against the requested anchor using the same
+ * month-over-month movement logic the rest of the app already uses.
+ */
+function buildMovementSnapshot(period, anchorPeriod, bulletinData, anchorData, movements) {
+  const currentMovements = getBulletinMovements(bulletinData, anchorData)
+  const snapshot = { period, moves: [] }
+
+  for (const item of currentMovements) {
+    const previousItem = getComparableCategory(anchorData?.categories[item.group], item.code)
+    const previousValue = previousItem?.[item.country]?.finalActionDates?.[item.country]
+    const change = previousValue === undefined ? null : getDateChange(item.value, previousValue)
+    if (change) {
+      snapshot.moves.push({
+        group: item.group,
+        code: item.code,
+        country: item.country,
+        value: item.value,
+        previousValue,
+        change,
+        days: item.days,
+      })
+    }
+  }
+
+  return snapshot
+}
 const themeStorageKey = 'visa-visapulse-theme'
 const legacyThemeStorageKey = 'visa-datebook-theme'
 const HistoricalCutoffChart = lazy(() => import('./HistoricalCutoffChart.jsx'))
@@ -248,6 +282,7 @@ function buildHistoricalCutoffData(period, group, code, chart, countries) {
 }
 
 function App() {
+  const [activeView, setActiveView] = useState('bulletin')
   const [period, setPeriod] = useState(defaultPeriod)
   const [preference, setPreference] = useState('employmentBased')
   const [chart, setChart] = useState('finalActionDates')
@@ -259,11 +294,47 @@ function App() {
   const [theme, setTheme] = useState(() =>
     localStorage.getItem(themeStorageKey) ?? localStorage.getItem(legacyThemeStorageKey) ?? 'dark',
   )
+  const [uploadInput, setUploadInput] = useState(null)
+  const [uploadFilename, setUploadFilename] = useState('')
+  const [uploadError, setUploadError] = useState(null)
   const bulletinData = bulletinsByPeriod[period]
   const monthlyInsights = buildMonthlyInsights(period, bulletinData)
   const executiveSummary = createExecutiveSummary(period, monthlyInsights)
   const comparisonPeriod = getComparisonPeriod(period, comparison)
   const comparisonData = comparisonPeriod ? bulletinsByPeriod[comparisonPeriod] : null
+  const anchorData = bulletinsByPeriod[twoYearsAgoPeriod]
+  const currentMovements = getBulletinMovements(bulletinData, anchorData)
+  const movementSnapshot = buildMovementSnapshot(period, twoYearsAgoPeriod, bulletinData, anchorData, currentMovements)
+  const datasetRange = datasetStartPeriod <= datasetEndPeriod
+    ? availablePeriods.slice(availablePeriods.indexOf(datasetStartPeriod), availablePeriods.indexOf(datasetEndPeriod) + 1)
+    : []
+
+  function handleFileUpload(file) {
+    setUploadError(null)
+    setUploadFilename(file ? file.name : '')
+    setUploadInput(null)
+    try {
+      const reader = new FileReader()
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result)
+          if (parsed && parsed.bulletin && parsed.categories) {
+            setUploadInput(parsed)
+          } else {
+            setUploadError('The uploaded file does not look like a visa bulletin JSON.')
+          }
+        } catch (err) {
+          setUploadError('The uploaded file is not valid JSON.')
+        }
+      }
+      reader.onerror = () => {
+        setUploadError('Could not read the uploaded file. Please try again.')
+      }
+      reader.readAsText(file)
+    } catch (err) {
+      setUploadError('Could not read the uploaded file. Please try again.')
+    }
+  }
   const categories = Object.entries(bulletinData.categories[preference])
   const selectedTrendCategory = categories.some(([code]) => code === trendCategory)
     ? trendCategory
@@ -312,6 +383,34 @@ function App() {
       </header>
 
       <main id="top">
+        <div className="main-view-tabs" role="tablist" aria-label="VisaPulse views">
+          <button
+            id="bulletin-view-tab"
+            className={activeView === 'bulletin' ? 'is-active' : ''}
+            type="button"
+            role="tab"
+            aria-selected={activeView === 'bulletin'}
+            aria-controls="bulletin-view-panel"
+            onClick={() => setActiveView('bulletin')}
+          >Visa Bulletin</button>
+          <button
+            id="planner-view-tab"
+            className={activeView === 'planner' ? 'is-active' : ''}
+            type="button"
+            role="tab"
+            aria-selected={activeView === 'planner'}
+            aria-controls="planner-view-panel"
+            onClick={() => setActiveView('planner')}
+          >Green Card Planner</button>
+        </div>
+
+        <div
+          id="bulletin-view-panel"
+          role="tabpanel"
+          aria-labelledby="bulletin-view-tab"
+          tabIndex={0}
+          hidden={activeView !== 'bulletin'}
+        >
         <section className="intro" aria-labelledby="page-title">
           <div className="intro-copy">
             <div className="eyebrow"><span className="eyebrow-dot" /> MONTHLY VISA BULLETIN <span className="eyebrow-separator">/</span> FY {bulletinData.bulletin.fiscalYear}</div>
@@ -537,6 +636,42 @@ function App() {
           </p>
         </section>
 
+        
+            <div className="movement-list">
+              {movementSnapshot.moves.slice(0, 20).map((item) => (
+                <div className="movement-row" key={`${item.group}-${item.code}-${item.country}`}>
+                  <span className="movement-row-label">
+                    <span className="mover-category">{categoryLabels[item.code] ?? item.code}</span>
+                    <span>{item.countryName}</span>
+                  </span>
+                  <span className={`movement-row-value movement-${item.change.type}`}>
+                    {item.change.type === 'advance' ? 'Advanced' : item.change.type === 'retrogression' ? 'Retrogressed' : 'Unchanged'}
+                  </span>
+                  <span className="movement-row-days">{item.days > 0 ? `+${item.days}d` : `${item.days}d`}</span>
+                </div>
+              ))}
+            </div>
+          <div className="movement-since">
+            <span className="section-kicker">SINCE 2002</span>
+            <div className="movement-since-grid">
+              <div className="movement-since-card">
+                <span className="movement-since-label">Dataset span</span>
+                <strong className="movement-since-value">{datasetStartPeriod} → {datasetEndPeriod}</strong>
+                <span className="movement-since-count">{datasetRange.length} monthly bulletins</span>
+              </div>
+              <div className="movement-since-card">
+                <span className="movement-since-label">Anchor</span>
+                <strong className="movement-since-value">{formatPeriodLabel(twoYearsAgoPeriod)}</strong>
+                <span className="movement-since-count">10 years movement</span>
+              </div>
+              <div className="movement-since-card">
+                <span className="movement-since-label">Coverage</span>
+                <strong className="movement-since-value">25 years</strong>
+                <span className="movement-since-count">2002 through {datasetEndPeriod.slice(0, 4)}</span>
+              </div>
+            </div>
+          </div>
+
         <section className="data-section" aria-labelledby="data-heading">
           <div className="data-heading-row">
             <div>
@@ -554,7 +689,24 @@ function App() {
                 </select>
                 <ChevronDown className="select-chevron" size={14} />
               </label>
-              <a className="download-button" href={`/data/visa-bulletins/${bulletinData.bulletin.year}/${period}.json`} download={`${period}-visa-bulletin.json`}>
+              <label className="upload-control" title="Upload a visa-bulletin JSON file (preserved archive)">
+                <Upload size={14} />
+                <span>Upload file</span>
+                <input
+                  className="sr-only"
+                  type="file"
+                  accept=".json"
+                  aria-label="Upload a visa-bulletin JSON file"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0]
+                    if (file) handleFileUpload(file)
+                    event.target.value = ''
+                  }}
+                />
+              </label>
+               {uploadFilename && <span className="upload-filename">{uploadFilename}</span>}
+               {uploadError && <span className="upload-error">{uploadError}</span>}
+               <a className="download-button" href={`/data/visa-bulletins/${bulletinData.bulletin.year}/${period}.json`} download={`${period}-visa-bulletin.json`}>
               <ArrowDownToLine size={16} /> <span>Download data</span>
               </a>
             </div>
@@ -720,6 +872,16 @@ function App() {
           <span>Dates are shown as published for {formatPeriodLabel(period)}. Always confirm with the official bulletin.</span>
           <span className="footer-edition">FY {bulletinData.bulletin.fiscalYear} <i>•</i> ISSUE {String(monthIndex).padStart(2, '0')}</span>
         </footer>
+        </div>
+        <div
+          id="planner-view-panel"
+          role="tabpanel"
+          aria-labelledby="planner-view-tab"
+          tabIndex={0}
+          hidden={activeView !== 'planner'}
+        >
+          <GreenCardPlanner bulletin={bulletinData} />
+        </div>
       </main>
     </div>
   )

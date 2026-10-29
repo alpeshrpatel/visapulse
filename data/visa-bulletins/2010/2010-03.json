@@ -1,0 +1,20 @@
+{
+  "bulletin": {
+    "month": "March",
+    "year": 2010,
+    "fiscalYear": 2010,
+    "officialSourceUrl": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2010/visa-bulletin-for-march-2010.html",
+    "dataReferenceUrl": "https://www.visabulletin.ai/bulletins/2010/march"
+  },
+  "countryColumns": {
+    "allChargeabilityAreasExceptThoseListed": "All Chargeability Areas Except Those Listed",
+    "chinaMainlandBorn": "China-mainland born",
+    "india": "India",
+    "mexico": "Mexico",
+    "philippines": "Philippines"
+  },
+  "categories": {
+    "familySponsored": {},
+    "employmentBased": {}
+  }
+}

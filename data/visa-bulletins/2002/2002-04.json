@@ -1,0 +1,20 @@
+{
+  "bulletin": {
+    "month": "April",
+    "year": 2002,
+    "fiscalYear": 2002,
+    "officialSourceUrl": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2002/visa-bulletin-for-april-2002.html",
+    "dataReferenceUrl": "https://www.visabulletin.ai/bulletins/2002/april"
+  },
+  "countryColumns": {
+    "allChargeabilityAreasExceptThoseListed": "All Chargeability Areas Except Those Listed",
+    "chinaMainlandBorn": "China-mainland born",
+    "india": "India",
+    "mexico": "Mexico",
+    "philippines": "Philippines"
+  },
+  "categories": {
+    "familySponsored": {},
+    "employmentBased": {}
+  }
+}

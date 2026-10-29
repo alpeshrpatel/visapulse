@@ -1,0 +1,20 @@
+{
+  "bulletin": {
+    "month": "December",
+    "year": 2017,
+    "fiscalYear": 2018,
+    "officialSourceUrl": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2017/visa-bulletin-for-december-2017.html",
+    "dataReferenceUrl": "https://www.visabulletin.ai/bulletins/2017/december"
+  },
+  "countryColumns": {
+    "allChargeabilityAreasExceptThoseListed": "All Chargeability Areas Except Those Listed",
+    "chinaMainlandBorn": "China-mainland born",
+    "india": "India",
+    "mexico": "Mexico",
+    "philippines": "Philippines"
+  },
+  "categories": {
+    "familySponsored": {},
+    "employmentBased": {}
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "bulletin": {
+    "month": "January",
+    "year": 2008,
+    "fiscalYear": 2008,
+    "officialSourceUrl": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2008/visa-bulletin-for-january-2008.html",
+    "dataReferenceUrl": "https://www.visabulletin.ai/bulletins/2008/january"
+  },
+  "countryColumns": {
+    "allChargeabilityAreasExceptThoseListed": "All Chargeability Areas Except Those Listed",
+    "chinaMainlandBorn": "China-mainland born",
+    "india": "India",
+    "mexico": "Mexico",
+    "philippines": "Philippines"
+  },
+  "categories": {
+    "familySponsored": {},
+    "employmentBased": {}
+  }
+}

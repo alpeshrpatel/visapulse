@@ -1,0 +1,20 @@
+{
+  "bulletin": {
+    "month": "July",
+    "year": 2018,
+    "fiscalYear": 2018,
+    "officialSourceUrl": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2018/visa-bulletin-for-july-2018.html",
+    "dataReferenceUrl": "https://www.visabulletin.ai/bulletins/2018/july"
+  },
+  "countryColumns": {
+    "allChargeabilityAreasExceptThoseListed": "All Chargeability Areas Except Those Listed",
+    "chinaMainlandBorn": "China-mainland born",
+    "india": "India",
+    "mexico": "Mexico",
+    "philippines": "Philippines"
+  },
+  "categories": {
+    "familySponsored": {},
+    "employmentBased": {}
+  }
+}
