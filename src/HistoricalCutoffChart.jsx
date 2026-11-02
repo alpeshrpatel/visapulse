@@ -58,11 +58,6 @@ function formatAxisDate(value) {
 }
 
 export default function HistoricalCutoffChart({ data, countries, countryNames }) {
-  const finiteValues = data.flatMap((point) =>
-    countries.map((country) => point.values[country]).filter(Number.isFinite),
-  )
-  const unavailableLevel = finiteValues.length ? Math.min(...finiteValues) : null
-
   return (
     <ResponsiveContainer width="100%" height="100%">
       <LineChart data={data} margin={{ top: 5, right: 12, left: 4, bottom: 3 }} accessibilityLayer>
@@ -114,24 +109,28 @@ export default function HistoricalCutoffChart({ data, countries, countryNames })
             isAnimationActive={false}
           />
         ))}
-        {unavailableLevel !== null
-          ? countries.map((key) => (
-              <Line
-                key={`${key}-unavailable`}
-                type="monotone"
-                dataKey={(point) =>
-                  point.statuses[key] === 'Unavailable' ? unavailableLevel : null
-                }
-                name={`Unavailable (${countryNames[key]})`}
-                stroke="var(--change-retrogression)"
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4, strokeWidth: 0 }}
-                connectNulls={false}
-                isAnimationActive={false}
-              />
-            ))
-          : null}
+        {countries.map((key) => (
+          <Line
+            key={`${key}-unavailable-bridge`}
+            type="linear"
+            dataKey={(point) => {
+              const index = data.indexOf(point)
+              if (index < 0 || !Number.isFinite(point.values[key])) return null
+              const previousUnavailable =
+                index > 0 && data[index - 1].statuses[key] === 'Unavailable'
+              const nextUnavailable =
+                index < data.length - 1 && data[index + 1].statuses[key] === 'Unavailable'
+              return previousUnavailable || nextUnavailable ? point.values[key] : null
+            }}
+            name={`Unavailable gap (${countryNames[key]})`}
+            stroke="#e11d48"
+            strokeWidth={3}
+            dot={false}
+            activeDot={{ r: 4, strokeWidth: 0, fill: '#e11d48' }}
+            connectNulls={false}
+            isAnimationActive={false}
+          />
+        ))}
       </LineChart>
     </ResponsiveContainer>
   )
