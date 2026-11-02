@@ -127,7 +127,7 @@ export default function HistoricalCutoffChart({ data, countries, countryNames })
                 strokeWidth={2}
                 dot={false}
                 activeDot={{ r: 4, strokeWidth: 0 }}
-                connectNulls
+                connectNulls={false}
                 isAnimationActive={false}
               />
             ))
