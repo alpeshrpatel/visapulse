@@ -17,6 +17,16 @@ import {
   Upload,
 } from 'lucide-react'
 import GreenCardPlanner from './GreenCardPlanner.jsx'
+import FeedbackWidget from './FeedbackWidget.jsx'
+import {
+  buildMovementSnapshot,
+  formatMovementDelta,
+  getDatasetCoverage,
+  getNearestPriorDataPeriod,
+  getNumericDateDelta,
+  getUtcTimestamp,
+  offsetPeriod,
+} from './bulletinMetrics.js'
 const bulletinModules = import.meta.glob('../data/visa-bulletins/**/*.json', {
   eager: true,
   import: 'default',
@@ -27,43 +37,15 @@ const bulletinsByPeriod = Object.fromEntries(
     .filter(([period]) => period),
 )
 const availablePeriods = Object.keys(bulletinsByPeriod).sort()
+const datasetCoverage = getDatasetCoverage(availablePeriods)
 const today = new Date()
 const currentPeriod = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
 const defaultPeriod = bulletinsByPeriod[currentPeriod]
   ? currentPeriod
   : availablePeriods.filter((period) => period <= currentPeriod).at(-1) ?? availablePeriods.at(-1)
 
-const twoYearsAgoPeriod = '2024-11'
-const datasetStartPeriod = '2002-01'
-const datasetEndPeriod = String(Math.max(...availablePeriods))
-
-/**
- * Compares the current bulletin against the requested anchor using the same
- * month-over-month movement logic the rest of the app already uses.
- */
-function buildMovementSnapshot(period, anchorPeriod, bulletinData, anchorData, movements) {
-  const currentMovements = getBulletinMovements(bulletinData, anchorData)
-  const snapshot = { period, moves: [] }
-
-  for (const item of currentMovements) {
-    const previousItem = getComparableCategory(anchorData?.categories[item.group], item.code)
-    const previousValue = previousItem?.[item.country]?.finalActionDates?.[item.country]
-    const change = previousValue === undefined ? null : getDateChange(item.value, previousValue)
-    if (change) {
-      snapshot.moves.push({
-        group: item.group,
-        code: item.code,
-        country: item.country,
-        value: item.value,
-        previousValue,
-        change,
-        days: item.days,
-      })
-    }
-  }
-
-  return snapshot
-}
+const twoYearsAgoTarget = offsetPeriod(currentPeriod, -24)
+const twoYearsAgoPeriod = getNearestPriorDataPeriod(availablePeriods, bulletinsByPeriod, twoYearsAgoTarget)
 const themeStorageKey = 'visa-visapulse-theme'
 const legacyThemeStorageKey = 'visa-datebook-theme'
 const HistoricalCutoffChart = lazy(() => import('./HistoricalCutoffChart.jsx'))
@@ -88,13 +70,14 @@ const categoryLabels = {
 
 function formatDate(value) {
   if (value === 'Current' || value === 'Unavailable') return value
-  const [year, month, day] = value.split('-').map(Number)
+  const timestamp = getUtcTimestamp(value)
+  if (timestamp === null) return 'Date unavailable'
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
     timeZone: 'UTC',
-  }).format(new Date(Date.UTC(year, month - 1, day)))
+  }).format(new Date(timestamp))
 }
 
 function formatPeriodLabel(period) {
@@ -129,17 +112,13 @@ function getDateChange(current, previous) {
   if (previous === 'Current') return { label: 'Cutoff introduced', type: 'retrogression' }
   if (previous === 'Unavailable') return { label: 'Now available', type: 'advance' }
 
-  const days = Math.round((Date.parse(current) - Date.parse(previous)) / 86400000)
+  const days = getNumericDateDelta(current, previous)
+  if (days === null) return { label: 'Date change unavailable', type: 'unknown' }
   if (days === 0) return { label: 'No change', type: 'unchanged' }
   return {
     label: `${days > 0 ? '+' : ''}${days}d`,
     type: days > 0 ? 'advance' : 'retrogression',
   }
-}
-
-function getNumericDateDelta(current, previous) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(current) || !/^\d{4}-\d{2}-\d{2}$/.test(previous)) return null
-  return Math.round((Date.parse(current) - Date.parse(previous)) / 86400000)
 }
 
 function getBulletinMovements(current, previous) {
@@ -262,9 +241,10 @@ function createExecutiveSummary(period, insights) {
   return [lead, stillness, country, exception].filter(Boolean).join(' ')
 }
 
-function buildHistoricalCutoffData(period, group, code, chart, countries) {
+function buildHistoricalCutoffData(period, group, code, chart, countries, years = 10) {
   const endIndex = availablePeriods.indexOf(period)
-  const periods = availablePeriods.slice(Math.max(0, endIndex - 23), endIndex + 1)
+  const months = Math.max(1, Math.round(years * 12))
+  const periods = availablePeriods.slice(Math.max(0, endIndex - (months - 1)), endIndex + 1)
   return periods.map((bulletinPeriod) => {
     const bulletin = bulletinsByPeriod[bulletinPeriod]
     const item = getComparableCategory(bulletin.categories[group], code)
@@ -272,9 +252,7 @@ function buildHistoricalCutoffData(period, group, code, chart, countries) {
     const statuses = {}
     for (const country of countries) {
       const value = item?.[chart]?.[country]
-      values[country] = value && /^\d{4}-\d{2}-\d{2}$/.test(value)
-        ? Date.parse(`${value}T00:00:00Z`)
-        : null
+      values[country] = getUtcTimestamp(value)
       statuses[country] = value ?? 'Unavailable'
     }
     return { period: bulletinPeriod, values, statuses }
@@ -287,6 +265,7 @@ function App() {
   const [preference, setPreference] = useState('employmentBased')
   const [chart, setChart] = useState('finalActionDates')
   const [trendChart, setTrendChart] = useState('finalActionDates')
+  const [trendYears, setTrendYears] = useState(10)
   const [trendCategory, setTrendCategory] = useState('EB2')
   const [comparison, setComparison] = useState('month')
   const [country, setCountry] = useState('all')
@@ -302,12 +281,12 @@ function App() {
   const executiveSummary = createExecutiveSummary(period, monthlyInsights)
   const comparisonPeriod = getComparisonPeriod(period, comparison)
   const comparisonData = comparisonPeriod ? bulletinsByPeriod[comparisonPeriod] : null
-  const anchorData = bulletinsByPeriod[twoYearsAgoPeriod]
+  const anchorData = twoYearsAgoPeriod ? bulletinsByPeriod[twoYearsAgoPeriod] : null
   const currentMovements = getBulletinMovements(bulletinData, anchorData)
-  const movementSnapshot = buildMovementSnapshot(period, twoYearsAgoPeriod, bulletinData, anchorData, currentMovements)
-  const datasetRange = datasetStartPeriod <= datasetEndPeriod
-    ? availablePeriods.slice(availablePeriods.indexOf(datasetStartPeriod), availablePeriods.indexOf(datasetEndPeriod) + 1)
-    : []
+  const movementSnapshot = buildMovementSnapshot(period, twoYearsAgoPeriod, currentMovements)
+  const datasetRange = datasetCoverage.periods
+  const datasetStartPeriod = datasetCoverage.startPeriod
+  const datasetEndPeriod = datasetCoverage.endPeriod
 
   function handleFileUpload(file) {
     setUploadError(null)
@@ -339,7 +318,7 @@ function App() {
   const selectedTrendCategory = categories.some(([code]) => code === trendCategory)
     ? trendCategory
     : categories[0]?.[0]
-  const trendData = buildHistoricalCutoffData(period, preference, selectedTrendCategory, trendChart, countryKeys)
+  const trendData = buildHistoricalCutoffData(period, preference, selectedTrendCategory, trendChart, countryKeys, trendYears)
   const visibleCategories = categories.filter(([code, item]) =>
     `${code} ${item.name}`.toLowerCase().includes(query.trim().toLowerCase()),
   )
@@ -583,7 +562,7 @@ function App() {
           <div className="trend-heading">
             <div>
               <span className="section-kicker">HISTORICAL CUTOFFS</span>
-              <h2 id="trend-heading">Two years of movement<span>.</span></h2>
+              <h2 id="trend-heading">{trendYears} years of movement<span>.</span></h2>
             </div>
             <span className="trend-window">
               {trendData.length > 1
@@ -606,6 +585,22 @@ function App() {
               </select>
               <ChevronDown size={14} />
             </label>
+            <label className="trend-category-picker trend-years-picker">
+              <span className="section-kicker">YEARS</span>
+              <select
+                aria-label="Historical chart years"
+                value={trendYears}
+                onChange={(event) => setTrendYears(Number(event.target.value))}
+              >
+                {Array.from({ length: 10 }, (_, index) => index + 1).map((yearCount) => (
+                  <option key={yearCount} value={yearCount}>
+                    {yearCount} {yearCount === 1 ? 'year' : 'years'}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={14} />
+            </label>
+
             <div className="chart-switch" role="group" aria-label="Historical chart dates">
               <button
                 className={trendChart === 'finalActionDates' ? 'is-selected' : ''}
@@ -647,7 +642,7 @@ function App() {
                   <span className={`movement-row-value movement-${item.change.type}`}>
                     {item.change.type === 'advance' ? 'Advanced' : item.change.type === 'retrogression' ? 'Retrogressed' : 'Unchanged'}
                   </span>
-                  <span className="movement-row-days">{item.days > 0 ? `+${item.days}d` : `${item.days}d`}</span>
+                  <span className="movement-row-days">{formatMovementDelta(item.days, item.change)}</span>
                 </div>
               ))}
             </div>
@@ -656,18 +651,18 @@ function App() {
             <div className="movement-since-grid">
               <div className="movement-since-card">
                 <span className="movement-since-label">Dataset span</span>
-                <strong className="movement-since-value">{datasetStartPeriod} → {datasetEndPeriod}</strong>
+                <strong className="movement-since-value">{datasetStartPeriod ?? 'No data'} → {datasetEndPeriod ?? 'No data'}</strong>
                 <span className="movement-since-count">{datasetRange.length} monthly bulletins</span>
               </div>
               <div className="movement-since-card">
                 <span className="movement-since-label">Anchor</span>
-                <strong className="movement-since-value">{formatPeriodLabel(twoYearsAgoPeriod)}</strong>
-                <span className="movement-since-count">10 years movement</span>
+                <strong className="movement-since-value">{twoYearsAgoPeriod ? formatPeriodLabel(twoYearsAgoPeriod) : 'No archive data'}</strong>
+                <span className="movement-since-count">Comparison anchor for {formatPeriodLabel(period)}</span>
               </div>
               <div className="movement-since-card">
                 <span className="movement-since-label">Coverage</span>
-                <strong className="movement-since-value">25 years</strong>
-                <span className="movement-since-count">2002 through {datasetEndPeriod.slice(0, 4)}</span>
+                <strong className="movement-since-value">{datasetCoverage.yearCount} years</strong>
+                <span className="movement-since-count">{datasetStartPeriod?.slice(0, 4) ?? 'n/a'} through {datasetEndPeriod?.slice(0, 4) ?? 'n/a'}</span>
               </div>
             </div>
           </div>
@@ -883,6 +878,7 @@ function App() {
           <GreenCardPlanner bulletin={bulletinData} />
         </div>
       </main>
+      <FeedbackWidget />
     </div>
   )
 }

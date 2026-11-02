@@ -1,5 +1,14 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import {
+  buildMovementSnapshot,
+  formatMovementDelta,
+  getDatasetCoverage,
+  getNearestPriorDataPeriod,
+  getNumericDateDelta,
+  getUtcTimestamp,
+  offsetPeriod,
+} from '../src/bulletinMetrics.js'
 import { assessCutoff, buildGreenCardPlan } from '../src/greenCardTimeline.js'
 
 const bulletin = {
@@ -54,6 +63,63 @@ const baseInput = {
   premiumProcessing: 'none',
   wasTransferred: false,
 }
+
+test('dataset coverage uses the latest valid period without numeric coercion', () => {
+  const coverage = getDatasetCoverage(['2002-01', '2026-11', 'bad', '2026-99'])
+  assert.equal(coverage.startPeriod, '2002-01')
+  assert.equal(coverage.endPeriod, '2026-11')
+  assert.equal(coverage.yearCount, 25)
+  assert.equal(coverage.periods.length, 2)
+  assert.equal(getDatasetCoverage([]).endPeriod, null)
+})
+
+test('comparison anchor skips an empty bulletin file', () => {
+  const periods = ['2024-09', '2024-10', '2024-11']
+  const bulletins = {
+    '2024-09': { categories: { familySponsored: {} } },
+    '2024-10': { categories: { familySponsored: { F1: { finalActionDates: { india: '2020-01-01' } } } } },
+    '2024-11': { categories: { familySponsored: {} } },
+  }
+  assert.equal(getNearestPriorDataPeriod(periods, bulletins, '2024-11'), '2024-10')
+  assert.equal(getNearestPriorDataPeriod(periods, bulletins, '2024-09'), null)
+})
+
+test('two-year comparison target offsets the month by 24 months', () => {
+  const target = offsetPeriod('2026-11', -24)
+  assert.equal(target, '2024-11')
+  const bulletins = {
+    '2024-10': { categories: { familySponsored: { F1: { finalActionDates: { india: '2020-01-01' } } } } },
+    '2024-11': { categories: { familySponsored: {} } },
+  }
+  assert.equal(getNearestPriorDataPeriod(Object.keys(bulletins), bulletins, target), '2024-10')
+})
+
+test('date parsing rejects invalid values and deltas stay finite', () => {
+  assert.equal(getUtcTimestamp('2024-02-30'), null)
+  assert.equal(getNumericDateDelta('invalid', '2024-01-01'), null)
+  assert.equal(getNumericDateDelta('2024-02-29', '2024-02-28'), 1)
+})
+
+test('movement snapshots preserve status changes without NaN day labels', () => {
+  const movement = {
+    group: 'familySponsored',
+    code: 'F1',
+    country: 'india',
+    value: 'Current',
+    previousValue: '2024-01-01',
+    movement: { label: 'Became current', type: 'advance' },
+    days: null,
+  }
+  const snapshot = buildMovementSnapshot('2026-11', '2024-11', [
+    movement,
+    { ...movement, code: 'F2A', movement: { label: 'No change', type: 'unchanged' }, days: 0 },
+  ])
+  assert.equal(snapshot.moves.length, 1)
+  assert.equal(snapshot.moves[0].change.label, 'Became current')
+  assert.equal(snapshot.moves[0].days, null)
+  assert.equal(formatMovementDelta(null, snapshot.moves[0].change), 'Became current')
+  assert.equal(formatMovementDelta(Number.NaN, null), 'Date change unavailable')
+})
 
 test('assessCutoff handles current, unavailable, waiting, and missing dates', () => {
   assert.equal(assessCutoff('2013-01-01', 'Current').status, 'eligible')

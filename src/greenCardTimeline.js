@@ -1,3 +1,5 @@
+import { getUtcTimestamp } from './bulletinMetrics.js'
+
 function getCategory(bulletin, group, code) {
   const categories = bulletin.categories[group]
   return categories[code] ?? (code === 'EB5' ? categories.EB5Unreserved : undefined)
@@ -7,7 +9,8 @@ export function assessCutoff(priorityDate, cutoff) {
   if (!priorityDate) {
     return { status: 'missing', label: 'Enter a priority date', cutoff }
   }
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(priorityDate)) {
+  const priorityTimestamp = getUtcTimestamp(priorityDate)
+  if (priorityTimestamp === null) {
     return { status: 'invalid', label: 'Enter a valid priority date', cutoff }
   }
   if (cutoff === 'Current') {
@@ -16,13 +19,14 @@ export function assessCutoff(priorityDate, cutoff) {
   if (!cutoff || cutoff === 'Unavailable') {
     return { status: 'unavailable', label: 'No cutoff available', cutoff: cutoff ?? 'Unavailable' }
   }
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(cutoff)) {
+  const cutoffTimestamp = getUtcTimestamp(cutoff)
+  if (cutoffTimestamp === null) {
     return { status: 'unavailable', label: 'No cutoff available', cutoff }
   }
   if (priorityDate <= cutoff) {
     return { status: 'eligible', label: 'Priority date is current', cutoff }
   }
-  const daysAfterCutoff = Math.round((Date.parse(`${priorityDate}T00:00:00Z`) - Date.parse(`${cutoff}T00:00:00Z`)) / 86400000)
+  const daysAfterCutoff = Math.round((priorityTimestamp - cutoffTimestamp) / 86400000)
   return {
     status: 'waiting',
     label: `${daysAfterCutoff} days after cutoff`,
