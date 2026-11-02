@@ -627,7 +627,7 @@ function App() {
             )}
           </div>
           <p className="trend-note">
-            {preference === 'employmentBased' ? 'Employment-based' : 'Family-sponsored'} {categoryLabels[selectedTrendCategory] ?? selectedTrendCategory} across all five chargeability areas. Cutoff values are dates; “Current” appears as gaps, and “Unavailable” periods are shown as a straight red line.
+            {preference === 'employmentBased' ? 'Employment-based' : 'Family-sponsored'} {categoryLabels[selectedTrendCategory] ?? selectedTrendCategory} across all five chargeability areas. Hover any point for exact cutoff dates or statuses; red segments bridge unavailable periods, while Current months stay open.
           </p>
         </section>
 
