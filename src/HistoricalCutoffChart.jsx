@@ -58,6 +58,11 @@ function formatAxisDate(value) {
 }
 
 export default function HistoricalCutoffChart({ data, countries, countryNames }) {
+  const finiteValues = data.flatMap((point) =>
+    countries.map((country) => point.values[country]).filter(Number.isFinite),
+  )
+  const unavailableLevel = finiteValues.length ? Math.min(...finiteValues) : null
+
   return (
     <ResponsiveContainer width="100%" height="100%">
       <LineChart data={data} margin={{ top: 5, right: 12, left: 4, bottom: 3 }} accessibilityLayer>
@@ -109,6 +114,24 @@ export default function HistoricalCutoffChart({ data, countries, countryNames })
             isAnimationActive={false}
           />
         ))}
+        {unavailableLevel !== null
+          ? countries.map((key) => (
+              <Line
+                key={`${key}-unavailable`}
+                type="monotone"
+                dataKey={(point) =>
+                  point.statuses[key] === 'Unavailable' ? unavailableLevel : null
+                }
+                name={`Unavailable (${countryNames[key]})`}
+                stroke="var(--change-retrogression)"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4, strokeWidth: 0 }}
+                connectNulls
+                isAnimationActive={false}
+              />
+            ))
+          : null}
       </LineChart>
     </ResponsiveContainer>
   )
