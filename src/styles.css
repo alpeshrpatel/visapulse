@@ -578,7 +578,7 @@ h1 span { color: var(--green); }
 .feedback-widget {
   position: fixed;
   right: 20px;
-  bottom: 20px;
+  bottom: 80px;
   z-index: 1000;
   display: flex;
   flex-direction: column;
