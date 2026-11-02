@@ -265,7 +265,7 @@ function App() {
   const [preference, setPreference] = useState('employmentBased')
   const [chart, setChart] = useState('finalActionDates')
   const [trendChart, setTrendChart] = useState('finalActionDates')
-  const [trendYears, setTrendYears] = useState(10)
+  const [trendYears, setTrendYears] = useState(2)
   const [trendCategory, setTrendCategory] = useState('EB2')
   const [comparison, setComparison] = useState('month')
   const [country, setCountry] = useState('all')
