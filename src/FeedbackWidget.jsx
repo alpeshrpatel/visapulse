@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { CheckCircle2, MessageCircle, Send, X } from 'lucide-react'
 
-const FEEDBACK_EMAIL = 'alpeshrpatel@gmail.com'
-const FEEDBACK_ENDPOINT = `https://formsubmit.co/ajax/${FEEDBACK_EMAIL}`
+// Configured at build time; the widget does not render when it is unset.
+const FEEDBACK_ENDPOINT = import.meta.env.VITE_FEEDBACK_ENDPOINT ?? ''
 
 export default function FeedbackWidget() {
   const [open, setOpen] = useState(false)
@@ -10,6 +10,7 @@ export default function FeedbackWidget() {
   const [message, setMessage] = useState('')
   const [status, setStatus] = useState('idle')
   const [notice, setNotice] = useState('')
+  if (!FEEDBACK_ENDPOINT) return null
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -53,13 +54,8 @@ export default function FeedbackWidget() {
         setOpen(false)
       }, 2200)
     } catch (error) {
-      const subject = encodeURIComponent('VisaPulse feedback')
-      const body = encodeURIComponent(
-        `From: ${email.trim() || 'not provided'}\n\n${message.trim()}`,
-      )
-      window.location.href = `mailto:${FEEDBACK_EMAIL}?subject=${subject}&body=${body}`
-      setStatus('idle')
-      setNotice('Opened your email app to send the feedback.')
+      setStatus('error')
+      setNotice('Could not send your feedback. Please try again later.')
     }
   }
 

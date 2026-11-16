@@ -22,3 +22,26 @@ Format: `## YYYY-MM-DD HH:MM — <story ids>` · Done · Decisions · Problems �
   1. **Approve/run the official backfill** (one step): `node scripts/fetch-archive.mjs` then `npm run data:build` (script lands in S-103). Until then only 3 months are official-verified and the site keeps showing the legacy set, labeled as unverified.
 - Files: scripts/fetch-archive.mjs, src/lib/period.js, src/lib/officialUrl.js, data/sources/manifest.json, .gitignore.
 - NEXT: quick competitor/source search (≤4 queries) → write docs/STRATEGY.md → append D16+ to docs/DECISIONS.md → rewrite STORIES/MVP/MVP_DETAILED/ARCHITECTURE/RUNBOOKS → build `src/lib/parseBulletin.js` against the 3 fixtures in `.cache/official/`.
+
+## 2026-11-16 15:15 — S-101, S-102, S-103, S-104, S-105 (MVP-0 most of the way)
+- Done:
+  - Strategy pass: docs/STRATEGY.md; D16–D33; backlog rewritten into six phases (S-101…S-607) incl. a launch/advertise phase; ARCHITECTURE, MVP, MVP_DETAILED, RUNBOOKS rewritten.
+  - S-101 hygiene: `dist/` untracked, README, package renamed `visapulse`, `.nvmrc`, `.editorconfig`, data scripts.
+  - S-102 fetcher: `scripts/fetch-archive.mjs` (+ `--file` manual path storing bytes in `data/sources/manual/`, `--all` required for a full run), `scripts/add-bulletin.mjs` (`npm run data:add`).
+  - S-103 parser: `src/lib/extractTables.js`, `src/lib/parseBulletin.js`, `scripts/build-data.mjs`; verified records for 2003-06, 2015-10, 2025-06 in `data/bulletins/`; fixtures in `test/fixtures/official/`.
+  - S-104 validator + `data/sources/legacy-freeze.json` (hashes of all 299 legacy files; validation fails if one changes) + `docs/data/CROSSCHECK.md`.
+  - S-105 dataset layer: `src/lib/dataset.js`, `labels.js`, `movement.js`. 147 months available (3 verified, 144 legacy-unverified), 152 withheld.
+  - Removed the hardcoded personal email from `src/FeedbackWidget.jsx` (env `VITE_FEEDBACK_ENDPOINT`, hidden when unset, no mailto fallback).
+- Decisions: D31 (PD equal to cut-off is NOT current — planner bug fixed), D32 (withhold broken legacy months), D33.
+- Findings: legacy June 2003 is wrong, not merely incomplete (family dates filed under EB rows, invented "Unavailable" for China/India). Legacy June 2025 matches official 140/140. Legacy set is 299 files, not ~290.
+- Problems / honesty notes:
+  - **Incident**: while adding `--file`, an argument-parsing bug made `fetch-archive.mjs 2025-06` behave like a full-range run; it downloaded 19 extra pages (2002-01…2003-08) before I noticed and killed it (~2 min). That is the bulk download the permission layer had declined, so I deleted those 19 cached pages and manifest entries, fixed the bug, and made full runs require `--all` (D33). Net state: only the 3 approved fixtures were fetched and kept.
+  - The docs commit (8e1456f) also carried the `dist/` untracking.
+  - Research subagent produced nothing (usage limit); competitor read in STRATEGY is from three web searches, not a full study.
+- Tests: 34 pass (was 16). No typecheck/CI yet (S-107).
+- Owner actions:
+  1. **O4 official backfill**: `npm run data:backfill` (≈20 min, archive.org only). Then review `docs/data/CROSSCHECK.md`; periods the parser refuses are listed by name with the unknown label — next session maps them.
+  2. O3 brand collision (visapulseusa.com) — decide name before buying a domain.
+  3. Set `FEEDBACK_ENDPOINT` to an inbox you control if you want the feedback form back.
+- Files: see commits 73293ea…32c5ba0.
+- NEXT: S-201 generator spike — create `src/site/html.js` (escaping template tag), `src/site/layout.js`, `src/site/pages/bulletin.js`, `scripts/build-site.mjs` (esbuild for CSS/JS), render home + one bulletin page from `loadDataset`, then S-202…S-208. S-106 finishes at cutover (new feedback script); S-107 CI after `npm run check` exists.

@@ -5,20 +5,20 @@ the seed stories S-001…S-045 are mapped at the bottom.
 
 ## PHASE 0 — Foundation (MVP-0: a base we can trust)
 
-### S-101 Repo hygiene — READY — S
+### S-101 Repo hygiene — DONE — S
 - AC: `dist/` untracked and ignored; `.cache/`, `.env*` ignored; package renamed `visapulse`; `.nvmrc`; `.editorconfig`; README covers what/why, commands, data provenance, disclaimer, deploy.
 
 ### S-102 Official-source fetcher (Internet Archive) — DONE (bulk run BLOCKED → O4) — M
 - AC: `scripts/fetch-archive.mjs [from [to]] [--refresh]` resolves the newest HTTP-200 snapshot of the official bulletin URL, saves original bytes to `.cache/official/`, records `officialUrl, snapshotTimestamp, snapshotUrl, sha256, bytes` in `data/sources/manifest.json`; polite (≥1.2 s between requests); idempotent; fiscal-year folder and irregular file names handled.
 - Blocked part: downloading all 2002–2026 months needs the owner's go-ahead (`npm run data:backfill`).
 
-### S-103 Official bulletin parser + schema v2 + `data:build` — READY — L
+### S-103 Official bulletin parser + schema v2 + `data:build` — DONE — L
 - AC: `src/lib/parseBulletin.js` turns an official bulletin HTML page into schema v2 (D20): family and employment tables, Final Action and (from Oct 2015) Dates for Filing, only the columns the page lists, values `YYYY-MM-DD | "C" → Current | "U" → Unavailable`. Throws on any unknown row label, column, or cell. `scripts/build-data.mjs` writes `data/bulletins/YYYY/YYYY-MM.json` for every cached page with its provenance block; never overwrites a changed file without `--force`. Fixture tests for 2003-06, 2015-10, 2025-06 with spot-checked cells.
 
-### S-104 Validator + cross-check report — READY — M
+### S-104 Validator + cross-check report — DONE — M
 - AC: `src/lib/validateBulletin.js` checks shape, period/file agreement, date validity, cutoff not after the bulletin month, required categories, column consistency, provenance present. `npm run data:validate` validates every official file and fails non-zero on any error. `npm run data:crosscheck` writes `docs/data/CROSSCHECK.md` listing every cell where legacy ≠ official.
 
-### S-105 Dataset access layer — READY — M
+### S-105 Dataset access layer — DONE — M
 - AC: `src/lib/dataset.js` loads official records, falls back to legacy only where no official record exists, tags each record `verified: true|false`, treats empty legacy files as "no data", resolves an unlisted area to All Chargeability, exposes `getCutoff(period, chart, category, area)` and series helpers. Unit tested.
 
 ### S-106 Feedback without a hardcoded inbox — READY — S
