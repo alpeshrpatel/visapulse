@@ -45,3 +45,21 @@ Format: `## YYYY-MM-DD HH:MM — <story ids>` · Done · Decisions · Problems �
   3. Set `FEEDBACK_ENDPOINT` to an inbox you control if you want the feedback form back.
 - Files: see commits 73293ea…32c5ba0.
 - NEXT: S-201 generator spike — create `src/site/html.js` (escaping template tag), `src/site/layout.js`, `src/site/pages/bulletin.js`, `scripts/build-site.mjs` (esbuild for CSS/JS), render home + one bulletin page from `loadDataset`, then S-202…S-208. S-106 finishes at cutover (new feedback script); S-107 CI after `npm run check` exists.
+
+## 2026-11-16 17:10 — S-106, S-107, S-201…S-208, S-401, S-402, S-405 — MVP-0 and MVP-1 SUMMARY
+- Shipped (all local commits, nothing pushed or deployed):
+  - **MVP-0 Foundation — done except the bulk backfill (owner action O4).**
+  - **MVP-1 Static site — done except S-209 (a11y/perf audit).** Generator in `src/site/` (`html.js` auto-escaping templates, `layout.js`, `components.js`, `pages.js`, `chart.js` build-time SVG, `site.css`), `scripts/build-site.mjs`, `scripts/dev.mjs` (port 4321), `scripts/check-site.mjs`. Client: `src/client/site.js` (theme, chart switch, feedback form), `src/client/planner.jsx` + `planner.css` (the only React island).
+  - Removed: Vite, Recharts, `App.jsx`, `main.jsx`, `HistoricalCutoffChart.jsx`, `FeedbackWidget.jsx`, `styles.css`, root `index.html`, `scripts/download-visa-bulletins.mjs` (third-party scraper; still in git history). Google Fonts dropped for system fonts (no third-party requests at all).
+  - S-107 CI (`.github/workflows/ci.yml` runs `npm run check`), S-401 `public/_headers` + `.env.example`, S-402 `.github/workflows/refresh-data.yml` (daily on days 8–25, archive-only, opens a PR), S-405 `docs/LAUNCH.md`.
+- Metrics: 247 pages built in ~0.5 s · home 4.8 kB gz · CSS 3.2 kB gz · JS on every page 0.9 kB gz · planner page +52 kB gz (React) · 38 tests pass · `tsc --checkJs` clean · `check-site`: 247 pages, 32k internal links, 0 broken · dependencies: 3 runtime (react, react-dom, lucide-react), 5 dev.
+- Data on the site right now: 147 months shown (3 verified, 144 labeled unverified), 152 withheld with a link to the official page. Unverified months do contain errors (e.g. legacy July 2023 EB-2 Dates for Filing repeats the EB-1 row) — the label and the chart note say so. Only the backfill fixes this.
+- Verified in a real browser (built-in pane, localhost:4321): home, a verified bulletin page (June 2025), EB-2 India and F4 Philippines pages, archive, planner, at 375 / 768 / 1280, light and dark. Chart switch works; planner island renders and computes; no horizontal overflow after a fix (visually hidden labels escaped the table scroll box). Console: one 404 from the very first request, made before the initial build finished; no failed requests on later loads. **Not verified**: Lighthouse scores, colour-contrast audit, keyboard-only walk-through, print layout, Safari/Firefox, the two GitHub workflows (never run — repository not pushed).
+- Decisions: D16–D33 (see DECISIONS). Notable deviation from "one commit per story": S-201…S-207 landed as one commit because the pages share one module.
+- Owner actions (all one step each):
+  1. **Backfill official data**: `npm run data:backfill` (≈20 min; archive.org only). Review `docs/data/CROSSCHECK.md`. Months the parser refuses are listed with the unknown label for the next session.
+  2. Decide the brand (O3) and domain; deploy `dist/` to a static host with `SITE_URL` set (RUNBOOKS RB4).
+  3. `git push` to enable CI and the monthly refresh workflow.
+  4. Optional: set `FEEDBACK_ENDPOINT` to a form endpoint you control.
+  5. Before promoting: follow the gate in `docs/LAUNCH.md`.
+- NEXT: S-301 priority-date checker (`/check/`: embed latest cut-offs as JSON, vanilla JS, URL state) → finish S-302 prose callouts → S-303 USCIS chart designation data file (enter only from the official USCIS page) → S-209 audit. After the owner runs the backfill: map any unknown row labels the parser reports (RUNBOOKS RB3), then drop the legacy fallback (D21).
