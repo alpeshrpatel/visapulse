@@ -73,7 +73,7 @@ async function listSnapshots(officialUrl) {
     filter: 'statuscode:200',
     limit: '-8',
   })
-  const body = await politeFetch(`https://web.archive.org/cdx/search/cdx?${query}`)
+  const body = /** @type {string | null} */ (await politeFetch(`https://web.archive.org/cdx/search/cdx?${query}`))
   if (!body || !body.trim()) return []
   /** @type {string[][]} */
   const rows = JSON.parse(body)
