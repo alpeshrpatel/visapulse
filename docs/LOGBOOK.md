@@ -63,3 +63,11 @@ Format: `## YYYY-MM-DD HH:MM — <story ids>` · Done · Decisions · Problems �
   4. Optional: set `FEEDBACK_ENDPOINT` to a form endpoint you control.
   5. Before promoting: follow the gate in `docs/LAUNCH.md`.
 - NEXT: S-301 priority-date checker (`/check/`: embed latest cut-offs as JSON, vanilla JS, URL state) → finish S-302 prose callouts → S-303 USCIS chart designation data file (enter only from the official USCIS page) → S-209 audit. After the owner runs the backfill: map any unknown row labels the parser reports (RUNBOOKS RB3), then drop the legacy fallback (D21).
+
+## 2026-11-16 17:45 — S-301 (MVP-2 started)
+- Done: `/check/` priority-date checker. Static form + `src/client/check.js` (bundled, loaded on that page only); latest cut-offs for every line × area × chart embedded as JSON with 12- and 24-month comparison values (absent when that month is withheld — never invented). Shareable state lives in the URL **fragment** (never sent to a server; chosen over a query string so "nothing leaves the browser" stays true). Uses the shared `priorityDateStatus`/`describeChange`, so a date equal to the cut-off reads "not current yet" (D31). Linked from the home page, the nav ("Check my date" replaced "About", which stays in the footer) and every category × area page.
+- Verified in the browser at 375 px light: EB-2 India 2013-11-01 (boundary case) and F4 Mexico 2010-05-05 restore from the fragment after reload; no horizontal overflow. Not verified: other browsers, keyboard-only use.
+- Tests: 39 pass. `npm run check` green. Site: 248 pages.
+- Files: src/client/check.js, src/site/pages.js (checkPage), layout.js, format.js, site.css, scripts/build-site.mjs, test/site.test.js.
+- Owner actions: unchanged (see 17:10 entry) — the backfill is the one that matters most.
+- NEXT: S-302 prose callouts (newly Current / Unavailable) in `summariseMovement` + bulletin page → S-303 `data/uscis-filing-charts.json` (enter months only from the official USCIS page, with source URL and date checked; show "check USCIS" where empty) → S-209 audit (Lighthouse, contrast, keyboard) → S-305 historical pace panel. After the owner's backfill: RUNBOOKS RB3, then remove the legacy fallback (D21).

@@ -7,7 +7,7 @@ import { renderCutoffChart } from '../src/site/chart.js'
 import { summariseMovement } from '../src/site/components.js'
 import { formatCutoff, periodFromSlug, periodSlug, urls } from '../src/site/format.js'
 import { html, jsonForScript, raw } from '../src/site/html.js'
-import { archivePage, bulletinPage, lineAreaPage, plannerPage, staticPages } from '../src/site/pages.js'
+import { archivePage, bulletinPage, checkPage, lineAreaPage, plannerPage, staticPages } from '../src/site/pages.js'
 
 const root = join(import.meta.dirname, '..', 'data')
 const dataset = loadDataset({ officialDir: join(root, 'bulletins'), legacyDir: join(root, 'visa-bulletins') })
@@ -98,4 +98,17 @@ test('movement summary counts only pairs present in both months', () => {
   const same = summariseMovement(view, view)
   assert.equal(same.total, same.unchanged)
   assert.ok(same.total > 0)
+})
+
+test('checker page embeds the latest cut-offs with 12- and 24-month comparisons', () => {
+  const page = String(checkPage({ site: { ...site, assets: { ...site.assets, checkJs: '/c.js' } }, dataset }))
+  assert.ok(page.includes('<h1>Is my priority date current?</h1>'))
+  const data = JSON.parse(page.match(/<script type="application\/json" id="check-data">(.*?)<\/script>/s)[1])
+  assert.equal(data.period, dataset.latestPeriod)
+  assert.equal(data.lines.length, LINES.length)
+  const cell = data.cutoffs.EB2.india.finalActionDates
+  assert.equal(cell.now, dataset.series('EB2', 'finalActionDates', 'india').at(-1).value)
+  // Comparison months that are withheld or missing are simply absent, never invented.
+  for (const key of ['m12', 'm24']) assert.ok(cell[key] === undefined || typeof cell[key] === 'string', key)
+  assert.ok(page.includes('nothing you type is sent to us'))
 })

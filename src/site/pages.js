@@ -8,7 +8,7 @@ import { fiscalYearOf, formatPeriod, periodRange, shiftPeriod } from '../lib/per
 import { renderCutoffChart } from './chart.js'
 import { cutoffTable, cutoffValue, hasFilingChart, movementChip, sourceLine, summariseMovement } from './components.js'
 import { OFFICIAL_LINKS, formatCutoff, urls } from './format.js'
-import { html, jsonForScript } from './html.js'
+import { html, jsonForScript, raw } from './html.js'
 import { layout } from './layout.js'
 
 /** @typedef {import('./layout.js').SiteContext} SiteContext */
@@ -47,7 +47,7 @@ export function bulletinPage({ site, dataset, period, isHome = false }) {
   <h1>${isHome ? html`${label} Visa Bulletin` : html`Visa Bulletin for ${label}`}</h1>
   <p class="lede">Priority-date cut-offs for every family and employment category${previous ? html`, with movement since ${formatPeriod(previousPeriod)}` : ''}.</p>
   ${sourceLine(view)}
-  ${isHome ? html`<p class="cta-row"><a class="button" href="${urls.lines}">Find your category</a><a class="button button-quiet" href="${urls.planner}">Plan your next step</a></p>` : ''}
+  ${isHome ? html`<p class="cta-row"><a class="button" href="${urls.check}">Check my priority date</a><a class="button button-quiet" href="${urls.lines}">Find your category</a><a class="button button-quiet" href="${urls.planner}">Plan your next step</a></p>` : ''}
 </section>
 
 <section class="summary" aria-labelledby="summary-h">
@@ -258,6 +258,7 @@ export function lineAreaPage({ site, dataset, line, area }) {
   ${view ? sourceLine(view) : ''}
 </section>
 <section class="stat-row" aria-label="Current cut-offs">${cards}</section>
+<p class="cta-row"><a class="button" href="${urls.check}#category=${line.slug}&area=${area.slug}">Check my date against this cut-off</a></p>
 <p class="muted">You are current when your priority date is <em>earlier than</em> the cut-off. Whether the Dates for Filing chart can be used for an I-485 this month is decided by USCIS: <a href="${OFFICIAL_LINKS.uscisCharts}" rel="noopener">check the USCIS page</a>.</p>
 
 <section class="chart-block">
@@ -352,6 +353,66 @@ export function plannerPage({ site, dataset }) {
     title: 'Green card process planner',
     description: 'A rule-based planner that checks your priority date against the latest Visa Bulletin and shows the usual next step. Not legal advice.',
     head: html`${site.assets.plannerCss ? html`<link rel="stylesheet" href="${site.assets.plannerCss}">` : ''}<script src="${site.assets.plannerJs}" defer></script>`,
+  })
+}
+
+/** Priority-date checker: the form is static, the answer is computed in the browser. @param {Common} options */
+export function checkPage({ site, dataset }) {
+  const latest = /** @type {string} */ (dataset.latestPeriod)
+  const view = dataset.get(latest)
+  if (!view) throw new Error('No bulletin for the checker')
+  /** @type {Record<string, Record<string, Record<string, { now: string, m12?: string, m24?: string }>>>} */
+  const cutoffs = {}
+  for (const line of LINES) for (const area of AREAS) for (const chart of CHARTS) {
+    const now = getCutoff(view, line.key, chart.key, area.key)
+    if (!now) continue
+    const at = (/** @type {number} */ monthsBack) => getCutoff(dataset.get(shiftPeriod(latest, -monthsBack)), line.key, chart.key, area.key)?.value
+    ;((cutoffs[line.key] ??= {})[area.key] ??= {})[chart.key] = { now: now.value, m12: at(12), m24: at(24) }
+  }
+  const data = {
+    period: latest,
+    periodLabel: formatPeriod(latest),
+    verified: view.verified,
+    today: site.buildDate,
+    lines: LINES.map(({ key, slug, code }) => ({ key, slug, code })),
+    areas: AREAS.map(({ key, slug, name }) => ({ key, slug, name })),
+    cutoffs,
+  }
+  const body = html`
+<section class="hero">
+  <p class="kicker">Checker</p>
+  <h1>Is my priority date current?</h1>
+  <p class="lede">Enter your priority date to see where it stands against the ${formatPeriod(latest)} Visa Bulletin on both charts. Everything is worked out in your browser; nothing you type is sent to us.</p>
+  ${sourceLine(view)}
+</section>
+<form id="check-form" class="check-form">
+  <label>Priority date<input type="date" name="date" min="1970-01-01" max="${site.buildDate}" required></label>
+  <label>Category<select name="category">
+    ${GROUPS.map((group) => html`<optgroup label="${group.name}">${linesInGroup(group.key).map((line) =>
+      html`<option value="${line.slug}"${line.key === 'EB2' ? raw(' selected') : ''}>${line.code}: ${line.name}</option>`)}</optgroup>`)}
+  </select></label>
+  <label>Chargeability area (usually your country of birth)<select name="area">
+    ${AREAS.map((area) => html`<option value="${area.slug}">${area.longName}</option>`)}
+  </select></label>
+</form>
+<section id="check-result" class="check-result" aria-live="polite">
+  <noscript><p class="muted">The checker needs JavaScript. You can read the same cut-offs in the <a href="${urls.lines}">priority-date tables</a>.</p></noscript>
+</section>
+<section class="explain">
+  <h2>What this does and does not tell you</h2>
+  <ul>
+    <li>You are current when your priority date is <em>earlier than</em> the cut-off. Being current on <strong>Final Action Dates</strong> means a visa number is available; it does not mean approval or a date.</li>
+    <li><strong>Dates for Filing</strong> matters only in months when USCIS accepts that chart for adjustment of status. <a href="${OFFICIAL_LINKS.uscisCharts}" rel="noopener">Check the USCIS page</a>.</li>
+    <li>The gap between your date and the cut-off is not a waiting time. Cut-offs move unevenly and can go backwards.</li>
+    <li>This is general information, not legal advice. Confirm on the official bulletin and with your attorney.</li>
+  </ul>
+</section>
+<script type="application/json" id="check-data">${jsonForScript(data)}</script>`
+  return layout({
+    site, path: urls.check, nav: 'check', body,
+    title: 'Is my priority date current? Visa Bulletin checker',
+    description: `Check a priority date against the ${formatPeriod(latest)} Visa Bulletin: Final Action Dates and Dates for Filing for every category and area. Runs in your browser.`,
+    head: html`<script src="${site.assets.checkJs}" defer></script>`,
   })
 }
 

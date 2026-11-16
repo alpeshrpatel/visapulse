@@ -14,7 +14,7 @@ import { formatPeriod } from '../src/lib/period.js'
 import { urls } from '../src/site/format.js'
 import { escapeHtml } from '../src/site/html.js'
 import {
-  archivePage, bulletinPage, lineAreaPage, linePage, linesIndexPage, notFoundPage, plannerPage, staticPages,
+  archivePage, bulletinPage, checkPage, lineAreaPage, linePage, linesIndexPage, notFoundPage, plannerPage, staticPages,
 } from '../src/site/pages.js'
 
 const ROOT = join(import.meta.dirname, '..')
@@ -44,6 +44,7 @@ const bundle = await build({
   entryPoints: {
     site: 'src/client/site.js',
     planner: 'src/client/planner.jsx',
+    check: 'src/client/check.js',
     styles: 'src/site/site.css',
     'planner-styles': 'src/client/planner.css',
   },
@@ -73,6 +74,7 @@ const site = {
     js: assetByEntry['src/client/site.js'],
     plannerJs: assetByEntry['src/client/planner.jsx'],
     plannerCss: assetByEntry['src/client/planner.css'],
+    checkJs: assetByEntry['src/client/check.js'],
   },
 }
 
@@ -86,6 +88,7 @@ const pages = [
   { path: urls.archive, document: archivePage({ site, dataset }) },
   { path: urls.lines, document: linesIndexPage({ site, dataset }) },
   { path: urls.planner, document: plannerPage({ site, dataset }) },
+  { path: urls.check, document: checkPage({ site, dataset }) },
   { path: '/404.html', document: notFoundPage({ site }) },
   ...staticPages({ site, dataset }),
   ...dataset.periods.map((period) => ({ path: urls.bulletin(period), document: bulletinPage({ site, dataset, period }) })),

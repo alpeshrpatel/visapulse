@@ -59,7 +59,7 @@ the seed stories S-001…S-045 are mapped at the bottom.
 
 ## PHASE 2 — Tools (MVP-2: answers my question)
 
-### S-301 Priority-date checker — READY — M
+### S-301 Priority-date checker — DONE — M
 - AC: `/check/`: date + category + area → status on both charts for the latest bulletin, days to cutoff, 12/24-month movement of that line; state in the URL (shareable); nothing leaves the browser; wording passes the "not a prediction" rule (D27).
 
 ### S-302 Monthly summary and movement highlights — IN_PROGRESS — M

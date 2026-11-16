@@ -37,6 +37,7 @@ export const urls = {
   /** @param {{ slug: string }} line @param {{ slug: string }} area */
   lineArea: (line, area) => `/priority-dates/${line.slug}/${area.slug}/`,
   planner: '/planner/',
+  check: '/check/',
   about: '/about/',
   methodology: '/methodology/',
   disclaimer: '/disclaimer/',

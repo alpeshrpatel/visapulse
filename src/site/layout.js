@@ -4,7 +4,7 @@ import { html, jsonForScript, raw } from './html.js'
 
 /**
  * @typedef {{
- *   siteUrl: string | null, assets: { css: string, js: string, plannerJs?: string, plannerCss?: string },
+ *   siteUrl: string | null, assets: { css: string, js: string, plannerJs?: string, plannerCss?: string, checkJs?: string },
  *   feedbackEndpoint: string | null, hasFeed: boolean, buildDate: string,
  * }} SiteContext
  */
@@ -12,9 +12,9 @@ import { html, jsonForScript, raw } from './html.js'
 const NAV = [
   { href: urls.home, label: 'Latest bulletin', key: 'home' },
   { href: urls.lines, label: 'Priority dates', key: 'lines' },
+  { href: urls.check, label: 'Check my date', key: 'check' },
   { href: urls.planner, label: 'Planner', key: 'planner' },
   { href: urls.archive, label: 'Archive', key: 'archive' },
-  { href: urls.about, label: 'About', key: 'about' },
 ]
 
 // Runs before first paint so the saved theme never flashes.
