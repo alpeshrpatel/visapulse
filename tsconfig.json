@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "strict": true,
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "skipLibCheck": true,
+    "types": [
+      "node"
+    ],
+    "lib": [
+      "ES2023",
+      "DOM"
+    ]
+  },
+  "include": [
+    "src/lib",
+    "src/site",
+    "scripts",
+    "src/bulletinMetrics.js"
+  ]
+}
