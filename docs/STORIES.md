@@ -21,39 +21,40 @@ the seed stories S-001…S-045 are mapped at the bottom.
 ### S-105 Dataset access layer — DONE — M
 - AC: `src/lib/dataset.js` loads official records, falls back to legacy only where no official record exists, tags each record `verified: true|false`, treats empty legacy files as "no data", resolves an unlisted area to All Chargeability, exposes `getCutoff(period, chart, category, area)` and series helpers. Unit tested.
 
-### S-106 Feedback without a hardcoded inbox — READY — S
+### S-106 Feedback without a hardcoded inbox — DONE — S
 - AC: no personal email anywhere in source; endpoint from `FEEDBACK_ENDPOINT` at build time; widget absent when unset; honeypot field; 30 s client throttle; no mailto fallback.
 
-### S-107 CI — READY — S
+### S-107 CI — DONE — S
 - AC: `.github/workflows/ci.yml` runs `npm ci && npm run check` on push and pull request with Node from `.nvmrc`; npm cache on.
 
 ## PHASE 1 — Static site (MVP-1: findable and fast)
 
-### S-201 Generator core + home page (spike, then keep) — READY — L
+### S-201 Generator core + home page (spike, then keep) — DONE — L
 - AC: `npm run build` renders `dist/index.html` from the latest bulletin through `src/site/` template functions with auto-escaping; hashed CSS/JS via esbuild; `npm run dev` rebuilds on change and serves locally. Home shows both charts for family and employment, movement vs the previous month, source line with official link and verification status, disclaimer. Spike result (build time, page weight) logged.
 
-### S-202 One page per bulletin month + archive index — READY — M
+### S-202 One page per bulletin month + archive index — DONE — M
 - AC: `/visa-bulletin/<month>-<year>/` for every period with data; prev/next links; `/visa-bulletin/` index grouped by fiscal year; months with no data say so and link to the official page.
 
-### S-203 Category × area pages with history — READY — L
+### S-203 Category × area pages with history — DONE — L
 - AC: `/priority-dates/<category>/<area>/` for each current category and area: current cutoffs on both charts, change over 1 and 12 months, inline SVG history chart with a text alternative, yearly history table, list of retrogressions; `/priority-dates/` index.
 
-### S-204 Planner page — READY — M
+### S-204 Planner page — DONE — M
 - AC: `/planner/` mounts the existing planner as the only React island, fed the latest bulletin; planner tests still pass; page works at 375 px.
 
-### S-205 Trust pages and persistent disclaimer — READY — S
+### S-205 Trust pages and persistent disclaimer — DONE — S
 - AC: `/about/`, `/methodology/` (sources, snapshot pinning, validation, limits), `/disclaimer/`, `/privacy/`; footer disclaimer and official-source links on every page.
 
-### S-206 SEO and sharing — READY — S
+### S-206 SEO and sharing — DONE — S
 - AC: unique title + description per page; canonical, Open Graph, sitemap.xml only when `SITE_URL` is known; robots.txt; JSON-LD (`WebSite`, `Dataset`); 404 page; no month hardcoded in any static title.
 
-### S-207 Open data + RSS — READY — S
+### S-207 Open data + RSS — DONE — S
 - AC: `/data/latest.json`, `/data/bulletins/<period>.json`, `/data/cutoffs.csv`, `/feed.xml` (one item per bulletin, newest 24); documented on `/data/`.
 
-### S-208 Cut over and remove the SPA — READY — M
+### S-208 Cut over and remove the SPA — DONE — M
 - AC: Vite, Recharts and the old `App.jsx` removed; `npm run check` green; pages verified at 375/768/1280 in light and dark with no console errors; results logged.
 
-### S-209 Accessibility and performance pass — READY — M
+### S-209 Accessibility and performance pass — IN_PROGRESS — M
+- Status 2026-11-16: no horizontal overflow at 375/768/1280, both themes render, bulletin-page JS 0.9 kB gz. Not done: Lighthouse run, contrast audit, keyboard walk-through.
 - AC: keyboard-complete; AA contrast both themes; reduced motion respected; total JS on a bulletin page < 15 kB gz; Lighthouse (or equivalent manual audit) results logged.
 
 ## PHASE 2 — Tools (MVP-2: answers my question)
@@ -61,7 +62,8 @@ the seed stories S-001…S-045 are mapped at the bottom.
 ### S-301 Priority-date checker — READY — M
 - AC: `/check/`: date + category + area → status on both charts for the latest bulletin, days to cutoff, 12/24-month movement of that line; state in the URL (shareable); nothing leaves the browser; wording passes the "not a prediction" rule (D27).
 
-### S-302 Monthly summary and movement highlights — READY — M
+### S-302 Monthly summary and movement highlights — IN_PROGRESS — M
+- Status 2026-11-16: "What moved" counts and top advances/retrogressions ship on every bulletin page (`summariseMovement`, tested). Not done: newly current/unavailable callouts as prose.
 - AC: each bulletin page opens with a deterministic plain-English summary (advances, retrogressions, newly current/unavailable, unchanged) generated from data and unit tested.
 
 ### S-303 USCIS chart designation — READY — M
@@ -78,10 +80,10 @@ the seed stories S-001…S-045 are mapped at the bottom.
 
 ## PHASE 3 — Launch and advertise (MVP-3)
 
-### S-401 Deploy configuration — READY — S
+### S-401 Deploy configuration — DONE — S
 - AC: `public/_headers` (security + cache), `_redirects`, deploy runbook for Cloudflare Pages and Netlify, `.env.example`. Deploy itself is an owner action.
 
-### S-402 Monthly refresh automation — READY — M
+### S-402 Monthly refresh automation — DONE — M
 - AC: `.github/workflows/refresh-data.yml` runs daily on days 8–25: if next month's official file is missing, poll the archive, parse, validate, cross-check, open a PR with a movement table. Manual path `npm run data:add -- <period> --file <saved.html>` documented.
 
 ### S-403 Privacy-friendly analytics — READY — S
@@ -90,7 +92,7 @@ the seed stories S-001…S-045 are mapped at the bottom.
 ### S-404 Social cards — READY — M
 - AC: per-bulletin and default Open Graph image generated at build (SVG → PNG) with month and headline movement.
 
-### S-405 Launch kit — READY — M
+### S-405 Launch kit — DONE — M
 - AC: `docs/LAUNCH.md`: positioning, one-liner, channel plan with each community's self-promotion rules, drafted posts (Show HN, Reddit, LinkedIn, X), outreach list template for attorneys/bloggers, Search Console + Bing steps, bulletin-day checklist, success metrics. Posting is an owner action.
 
 ### S-406 Bulletin-day ritual — READY — S
