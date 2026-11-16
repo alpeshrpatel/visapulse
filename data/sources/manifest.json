@@ -1,0 +1,26 @@
+{
+  "2003-06": {
+    "officialUrl": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2003/visa-bulletin-for-june-2003.html",
+    "retrievedVia": "web.archive.org",
+    "snapshotTimestamp": "20260520104721",
+    "snapshotUrl": "https://web.archive.org/web/20260520104721/https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2003/visa-bulletin-for-june-2003.html",
+    "sha256": "2633e770a20ff2f49e63ccae5d611b2ba239cf1947addd670fa65801713f4a6f",
+    "bytes": 105686
+  },
+  "2015-10": {
+    "officialUrl": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2016/visa-bulletin-for-october-2015.html",
+    "retrievedVia": "web.archive.org",
+    "snapshotTimestamp": "20260430023154",
+    "snapshotUrl": "https://web.archive.org/web/20260430023154/https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2016/visa-bulletin-for-october-2015.html",
+    "sha256": "88d7981f4e53f4e757b1a10d36f67ce17269e01a45012e9e4584f0ca86263fcd",
+    "bytes": 115929
+  },
+  "2025-06": {
+    "officialUrl": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2025/visa-bulletin-for-june-2025.html",
+    "retrievedVia": "web.archive.org",
+    "snapshotTimestamp": "20260714040106",
+    "snapshotUrl": "https://web.archive.org/web/20260714040106/https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2025/visa-bulletin-for-june-2025.html",
+    "sha256": "9b315d49f4361459d2162eab53bce0ab779c7d0fc0031651e8a805f0f14aadab",
+    "bytes": 115258
+  }
+}
