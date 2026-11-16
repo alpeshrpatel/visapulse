@@ -125,6 +125,8 @@ test('assessCutoff handles current, unavailable, waiting, and missing dates', ()
   assert.equal(assessCutoff('2013-01-01', 'Current').status, 'eligible')
   assert.equal(assessCutoff('2013-01-01', 'Unavailable').status, 'unavailable')
   assert.equal(assessCutoff('2024-01-01', '2023-11-01').status, 'waiting')
+  assert.equal(assessCutoff('2023-10-31', '2023-11-01').status, 'eligible')
+  assert.equal(assessCutoff('2023-11-01', '2023-11-01').status, 'waiting')
   assert.equal(assessCutoff('', '2023-11-01').status, 'missing')
 })
 

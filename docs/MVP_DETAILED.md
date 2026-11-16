@@ -1,7 +1,7 @@
 # Detailed MVP spec — read this to understand the product (low level)
 
 ## Domain primer (so agents don't guess)
-- The monthly **Visa Bulletin** (US State Dept) lists, per preference category and country, a **cutoff date**. A person is eligible to proceed when their **priority date (PD)** is **earlier than or equal to** the cutoff. `Current` = everyone eligible. `Unavailable` = no numbers.
+- The monthly **Visa Bulletin** (US State Dept) lists, per preference category and country, a **cutoff date**. A person is eligible to proceed when their **priority date (PD)** is **earlier than** the cutoff (the bulletin's wording: "only for applicants whose priority date is earlier than the final action date"; a PD equal to the cutoff is not yet current — D31). `Current` = everyone eligible. `Unavailable` = no numbers.
 - Two charts per category: **Final Action Dates** (when a green card can be approved) and **Dates for Filing** (when you may file adjustment/NVC docs, if USCIS allows that chart that month). Both stored per bulletin.
 - Family: F1 (unmarried adult kids of USC), F2A (spouse/kids of LPR), F2B (unmarried adult kids of LPR), F3 (married kids of USC), F4 (siblings of USC). Immediate relatives have no cutoff.
 - Employment: EB1 (priority workers), EB2 (advanced degree/NIW), EB3 (skilled/professional; "Other Workers" subline), EB4 (special immigrants; Religious subline), EB5 (investors; Unreserved / High Unemployment / Infrastructure / Rural from 2022).
