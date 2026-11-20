@@ -35,7 +35,8 @@ npm run data:backfill                          # one-time: every month since 200
 ```
 
 ## Project docs
-`docs/STRATEGY.md` (what and why) · `docs/DECISIONS.md` (decision log) · `docs/STORIES.md` (backlog) ·
+`docs/STRATEGY.md` (what and why) · `docs/DECISIONS.md` (decision log) · `docs/STORIES.md` (board) ·
+`docs/stories/` (one detailed file per open story; start with its README) · `docs/growth/` (marketing and growth plan) ·
 `docs/RUNBOOKS.md` (how to operate) · `docs/LOGBOOK.md` (progress log; resume point for any new session).
 
 ## Deploy

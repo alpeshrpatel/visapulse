@@ -1,5 +1,7 @@
 # Launch and growth kit (S-405). Everything here is prepared; posting, deploying and spending are owner actions.
 
+**After launch, the working plan is `docs/growth/`** (audience and 90-day plan, search plan, channel playbook with the bulletin-day runbook, outreach templates, metrics). This file stays the launch gate and first-posts kit.
+
 ## Positioning
 - **One line**: The Visa Bulletin you can trust and actually read.
 - **Why it is different**: every number links to the official State Department page and the exact archived copy it was read from; unverified data is labeled; nothing is presented as a prediction.

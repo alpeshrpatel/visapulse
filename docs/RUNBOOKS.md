@@ -21,13 +21,15 @@ Automated path (S-402): a scheduled workflow opens a pull request. Manual path:
 5. Add the USCIS chart designation for the month to `data/uscis-filing-charts.json` from the official USCIS page (S-303).
 6. Append a logbook entry.
 
-## RB3 Official backfill (one-time, owner action O4)
+## RB3 Official backfill (one-time; the owner runs it — tracked in TASKS.md)
 ```bash
 npm run data:backfill     # fetch-archive for 2002-01 → latest, then build-data, validate, cross-check
 ```
-Takes about 20 minutes (one request every 1.2 s). The parser stops at the first page it does not fully understand
-and names the row/column; add the label to the mapping in `src/lib/parseBulletin.js` **only after reading the official
-page**, add a fixture test, and re-run (it resumes from cache). Review `docs/data/CROSSCHECK.md` before merging.
+Takes about 20 minutes (one request every 1.2 s). Pages the parser does not fully understand are skipped, left
+unverified, and listed at the end with the row, column or cell it did not recognise (the command then exits non-zero;
+that is expected on the first run). Story S-108 handles the list: add a label to the mapping in
+`src/lib/parseBulletin.js` **only after reading the official page**, add a fixture test, and run `npm run data:build`
+again (pages are already cached). Review `docs/data/CROSSCHECK.md` before committing.
 
 ## RB4 Deploy (static host)
 Build command `npm run build`, output `dist`, Node from `.nvmrc`. Environment: `SITE_URL` (e.g. https://example.com),
@@ -46,9 +48,10 @@ The parser will throw with the unseen label. Read the official page, add the lab
 ## RB7 Agent session start / resume (MANDATORY)
 1. Read `docs/LOGBOOK.md` (bottom entry's NEXT), then `docs/STRATEGY.md`, `docs/DECISIONS.md`, `docs/STORIES.md`.
 2. `git status`, `npm ci`, `npm run check`.
-3. Take the first unfinished story; one commit per story; flip its status; append a logbook entry before context fills.
+3. Read `docs/stories/README.md`, then take the first `READY` story in the ready queue of `docs/STORIES.md` and follow its file in `docs/stories/`; flip its status; append a logbook entry before context fills. (A paste-ready prompt for a smaller model: `docs/stories/WORKER_PROMPT.md`.) **Do not commit** (owner instruction 2026-11-16): leave the changes in the working tree; the owner reviews and commits.
+   Do not run `npm run data:backfill` either: the owner runs it (see `TASKS.md`). If `data/bulletins/` holds more than three months, it has been run: start S-108.
 4. Never ask the owner; if blocked on money, credentials or a legal call: mark `BLOCKED`, log it under "Owner actions" with a default, move on.
-5. Owner-only: push, deploy, publish, send, spend.
+5. Owner-only: commit, push, deploy, publish, send, spend, bulk backfill.
 
 ## RB8 Feedback spam or abuse
 Unset `FEEDBACK_ENDPOINT` and redeploy (the widget disappears). The form already has a honeypot and a client throttle.

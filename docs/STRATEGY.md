@@ -46,6 +46,8 @@ Static-first, almost dependency-free: a small in-repo generator (plain ESM JavaS
 - If a source disappears: the dataset is self-contained in git with hashes; archive snapshots remain; the parser accepts any saved official page.
 
 ## Distribution
+Detailed plan (added 2026-11-16): `docs/growth/README.md` and the files beside it.
+
 SEO landing pages → monthly "bulletin day" ritual (summary page, RSS, social card) → community posts where allowed (r/USCIS, r/greencard, Trackitt, Blind) → open data and an embeddable widget for bloggers and attorneys → email list. Launch kit in Phase 3.
 
 ## 12-month view
