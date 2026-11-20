@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 2,
+  "period": "2003-06",
+  "bulletin": {
+    "month": "June",
+    "year": 2003,
+    "fiscalYear": 2003,
+    "title": "Visa Bulletin for June 2003",
+    "officialSourceUrl": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2003/visa-bulletin-for-june-2003.html"
+  },
+  "source": {
+    "publisher": "U.S. Department of State, Bureau of Consular Affairs",
+    "officialUrl": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2003/visa-bulletin-for-june-2003.html",
+    "retrievedVia": "web.archive.org",
+    "snapshotUrl": "https://web.archive.org/web/20260520104721/https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2003/visa-bulletin-for-june-2003.html",
+    "snapshotTimestamp": "20260520104721",
+    "sha256": "2633e770a20ff2f49e63ccae5d611b2ba239cf1947addd670fa65801713f4a6f",
+    "parserVersion": 1
+  },
+  "areas": {
+    "all": "All Chargeability Areas Except Those Listed",
+    "mexico": "MEXICO",
+    "philippines": "PHILIPPINES"
+  },
+  "categories": {
+    "familySponsored": {
+      "F1": {
+        "label": "1st",
+        "finalActionDates": {
+          "all": "1999-11-01",
+          "mexico": "1994-05-01",
+          "philippines": "1990-06-01"
+        }
+      },
+      "F2A": {
+        "label": "2A*",
+        "finalActionDates": {
+          "all": "1998-04-15",
+          "mexico": "1995-11-01",
+          "philippines": "1998-04-15"
+        }
+      },
+      "F2B": {
+        "label": "2B",
+        "finalActionDates": {
+          "all": "1994-10-22",
+          "mexico": "1991-11-15",
+          "philippines": "1994-10-22"
+        }
+      },
+      "F3": {
+        "label": "3rd",
+        "finalActionDates": {
+          "all": "1997-03-15",
+          "mexico": "1993-11-15",
+          "philippines": "1990-01-15"
+        }
+      },
+      "F4": {
+        "label": "4th",
+        "finalActionDates": {
+          "all": "1991-07-08",
+          "mexico": "1991-07-08",
+          "philippines": "1982-01-15"
+        }
+      }
+    },
+    "employmentBased": {
+      "EB1": {
+        "label": "1st",
+        "finalActionDates": {
+          "all": "Current",
+          "mexico": "Current",
+          "philippines": "Current"
+        }
+      },
+      "EB2": {
+        "label": "2nd",
+        "finalActionDates": {
+          "all": "Current",
+          "mexico": "Current",
+          "philippines": "Current"
+        }
+      },
+      "EB3": {
+        "label": "3rd",
+        "finalActionDates": {
+          "all": "Current",
+          "mexico": "Current",
+          "philippines": "Current"
+        }
+      },
+      "EB3OW": {
+        "label": "Other Workers",
+        "finalActionDates": {
+          "all": "Current",
+          "mexico": "Current",
+          "philippines": "Current"
+        }
+      },
+      "EB4": {
+        "label": "4th",
+        "finalActionDates": {
+          "all": "Current",
+          "mexico": "Current",
+          "philippines": "Current"
+        }
+      },
+      "EB4SR": {
+        "label": "Certain Religious Workers",
+        "finalActionDates": {
+          "all": "Current",
+          "mexico": "Current",
+          "philippines": "Current"
+        }
+      },
+      "EB5": {
+        "label": "5th",
+        "finalActionDates": {
+          "all": "Current",
+          "mexico": "Current",
+          "philippines": "Current"
+        }
+      },
+      "EB5TEARC": {
+        "label": "Targeted Employment Areas/Regional Centers",
+        "finalActionDates": {
+          "all": "Current",
+          "mexico": "Current",
+          "philippines": "Current"
+        }
+      }
+    }
+  }
+}

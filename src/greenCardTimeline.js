@@ -23,8 +23,12 @@ export function assessCutoff(priorityDate, cutoff) {
   if (cutoffTimestamp === null) {
     return { status: 'unavailable', label: 'No cutoff available', cutoff }
   }
-  if (priorityDate <= cutoff) {
+  // The bulletin's rule: a number is available only to a priority date *earlier than* the cut-off.
+  if (priorityDate < cutoff) {
     return { status: 'eligible', label: 'Priority date is current', cutoff }
+  }
+  if (priorityDate === cutoff) {
+    return { status: 'waiting', label: 'on the cut-off date itself (it must be earlier)', cutoff, daysAfterCutoff: 0 }
   }
   const daysAfterCutoff = Math.round((priorityTimestamp - cutoffTimestamp) / 86400000)
   return {

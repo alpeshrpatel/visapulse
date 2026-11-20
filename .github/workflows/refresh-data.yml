@@ -1,0 +1,58 @@
+name: Monthly bulletin refresh
+# Proposes next month's Visa Bulletin as a pull request. A person reviews and merges.
+# It reads the official page only from an Internet Archive snapshot (see docs/DECISIONS.md D19);
+# if no snapshot exists yet the job exits quietly and tries again the next day.
+on:
+  schedule:
+    - cron: '17 14 8-25 * *'
+  workflow_dispatch:
+    inputs:
+      period:
+        description: 'Bulletin month to add (YYYY-MM). Defaults to next month.'
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Work out the period
+        id: period
+        env:
+          REQUESTED: ${{ inputs.period }}
+        run: |
+          if [ -n "$REQUESTED" ]; then period="$REQUESTED"; else period="$(date -u -d "$(date -u +%Y-%m-01) +1 month" +%Y-%m)"; fi
+          case "$period" in [0-9][0-9][0-9][0-9]-[0-9][0-9]) ;; *) echo "Bad period: $period"; exit 1 ;; esac
+          echo "period=$period" >> "$GITHUB_OUTPUT"
+          if [ -f "data/bulletins/${period%-*}/$period.json" ]; then echo "exists=true" >> "$GITHUB_OUTPUT"; fi
+      - name: Add the bulletin
+        id: add
+        if: steps.period.outputs.exists != 'true'
+        run: |
+          if npm run data:add -- "${{ steps.period.outputs.period }}"; then echo "added=true" >> "$GITHUB_OUTPUT"; else echo "No verified record yet for ${{ steps.period.outputs.period }}."; fi
+      - name: Full check
+        if: steps.add.outputs.added == 'true'
+        run: npm run check
+      - name: Open a pull request
+        if: steps.add.outputs.added == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PERIOD: ${{ steps.period.outputs.period }}
+        run: |
+          branch="data/bulletin-$PERIOD"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add data docs/data
+          git commit -m "data: add bulletin $PERIOD"
+          git push --force origin "$branch"
+          gh pr create --title "data: add bulletin $PERIOD" --body "Parsed from the official page pinned in data/sources/manifest.json. Before merging: open the official bulletin and spot-check three cells (docs/RUNBOOKS.md RB2). Then add the USCIS chart designation for the month." || echo "Pull request already open."
